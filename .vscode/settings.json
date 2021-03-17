@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "memory.h": "c",
+        "bridge.h": "c",
+        "__locale": "c",
+        "algorithm": "c",
+        "ranges": "c",
+        "path.h": "c",
+        "pdf.h": "c"
+    }
+}
