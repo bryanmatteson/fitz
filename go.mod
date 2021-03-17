@@ -1,4 +1,4 @@
-module go.matteson.dev/go-fitz
+module go.matteson.dev/fitz
 
 go 1.15
 
