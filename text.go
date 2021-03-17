@@ -31,12 +31,6 @@ type Letter struct {
 	EndBaseline   Point
 }
 
-type OCRWord struct {
-	Text       string
-	Confidence float64
-	Quad       Quad
-}
-
 func (l Letter) IsWhitespace() bool { return unicode.IsSpace(l.Rune) }
 
 type TextSpan struct {
