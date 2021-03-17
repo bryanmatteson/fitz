@@ -1,6 +1,5 @@
 package fitz
 
-// #cgo LDFLAGS: -lmupdf -lm -lmupdf-third -stdlib=libc++ -lstdc++
 // #include "bridge.h"
 import "C"
 import (
