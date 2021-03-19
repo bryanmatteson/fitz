@@ -14,7 +14,7 @@ func Version() string {
 	return C.GoString(C.fz_version)
 }
 
-var _locks []sync.Mutex = make([]sync.Mutex, C.fz_lock_max)
+var _locks []sync.Mutex = make([]sync.Mutex, C.FZ_LOCK_MAX)
 
 //export lock_mutex
 func lock_mutex(user unsafe.Pointer, lock C.int) {
