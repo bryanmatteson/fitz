@@ -16,10 +16,7 @@ type DrawDevice struct {
 }
 
 func NewDrawDevice(transform Matrix, dest *image.RGBA) GoDevice {
-	ctx := draw2dimg.NewGraphicContext(dest)
-	ctx.SetFillColor(color.White)
-	ctx.Clear()
-	return &DrawDevice{image: dest, context: ctx, transform: transform}
+	return &DrawDevice{image: dest, context: draw2dimg.NewGraphicContext(dest), transform: transform}
 }
 
 func (dev *DrawDevice) FillPath(path *Path, fillRule FillRule, ctm Matrix, fillColor color.Color) {

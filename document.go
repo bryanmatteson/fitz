@@ -47,6 +47,7 @@ func (d *Document) loadFont(num int) {
 			stream = obj
 			ext = "pfa"
 		}
+
 		obj = C.pdf_dict_get(d.ctx, ref, pdfName(C.PDF_ENUM_NAME_FontFile2))
 		if obj != nil {
 			stream = obj

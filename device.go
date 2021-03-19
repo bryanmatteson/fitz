@@ -6,7 +6,7 @@ import (
 )
 
 type GoDevice interface {
-	Methods() CommandKind
+	ShouldCall(CommandKind) bool
 
 	FillPath(path *Path, fillRule FillRule, ctm Matrix, color color.Color)
 	StrokePath(path *Path, stroke *Stroke, ctm Matrix, color color.Color)
@@ -62,8 +62,7 @@ const (
 
 type BaseDevice struct{}
 
-func (dev *BaseDevice) Methods() CommandKind { return AllCommands }
-
+func (dev *BaseDevice) ShouldCall(CommandKind) bool { return true }
 func (dev *BaseDevice) FillPath(path *Path, fillRule FillRule, matrix Matrix, color color.Color) {
 }
 

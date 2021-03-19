@@ -11,7 +11,7 @@ import (
 //export fzgo_fill_path
 func fzgo_fill_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, evenOdd C.int, ctm C.fz_matrix, colorspace *C.fz_colorspace, color *C.cfloat_t, alpha C.float, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(FillPath) {
+	if !device.ShouldCall(FillPath) {
 		return
 	}
 
@@ -30,7 +30,7 @@ func fzgo_fill_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, eve
 //export fzgo_stroke_path
 func fzgo_stroke_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, stroke *C.cfz_stroke_state_t, ctm C.fz_matrix, colorspace *C.fz_colorspace, color *C.cfloat_t, alpha C.float, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(StrokePath) {
+	if !device.ShouldCall(StrokePath) {
 		return
 	}
 
@@ -45,7 +45,7 @@ func fzgo_stroke_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, s
 //export fzgo_fill_shade
 func fzgo_fill_shade(ctx *C.fz_context, dev *C.fz_device, shade *C.fz_shade, ctm C.fz_matrix, alpha C.float, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(FillShade) {
+	if !device.ShouldCall(FillShade) {
 		return
 	}
 
@@ -74,7 +74,7 @@ func fzgo_fill_shade(ctx *C.fz_context, dev *C.fz_device, shade *C.fz_shade, ctm
 func fzgo_fill_image(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image, ctm C.fz_matrix, alpha C.float, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
 
-	if !device.Methods().Has(FillImage) {
+	if !device.ShouldCall(FillImage) {
 		return
 	}
 
@@ -88,7 +88,7 @@ func fzgo_fill_image(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image, ctm
 func fzgo_fill_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image, ctm C.fz_matrix, colorspace *C.fz_colorspace, color *C.cfloat_t, alpha C.float, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
 
-	if !device.Methods().Has(FillImageMask) {
+	if !device.ShouldCall(FillImageMask) {
 		return
 	}
 
@@ -102,7 +102,7 @@ func fzgo_fill_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image
 //export fzgo_clip_path
 func fzgo_clip_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, evenOdd C.int, ctm C.fz_matrix, scissor C.fz_rect) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(ClipPath) {
+	if !device.ShouldCall(ClipPath) {
 		return
 	}
 
@@ -120,7 +120,7 @@ func fzgo_clip_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, eve
 //export fzgo_clip_stroke_path
 func fzgo_clip_stroke_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, stroke *C.cfz_stroke_state_t, ctm C.fz_matrix, scissor C.fz_rect) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(ClipStrokePath) {
+	if !device.ShouldCall(ClipStrokePath) {
 		return
 	}
 
@@ -135,7 +135,7 @@ func fzgo_clip_stroke_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path
 //export fzgo_fill_text
 func fzgo_fill_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, ctm C.fz_matrix, colorspace *C.fz_colorspace, color *C.cfloat_t, alpha C.float, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(FillText) {
+	if !device.ShouldCall(FillText) {
 		return
 	}
 
@@ -149,7 +149,7 @@ func fzgo_fill_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, ctm
 //export fzgo_stroke_text
 func fzgo_stroke_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, stroke *C.cfz_stroke_state_t, ctm C.fz_matrix, colorspace *C.fz_colorspace, color *C.cfloat_t, alpha C.float, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(StrokeText) {
+	if !device.ShouldCall(StrokeText) {
 		return
 	}
 
@@ -164,7 +164,7 @@ func fzgo_stroke_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, s
 //export fzgo_clip_text
 func fzgo_clip_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, ctm C.fz_matrix, scissor C.fz_rect) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(ClipText) {
+	if !device.ShouldCall(ClipText) {
 		return
 	}
 
@@ -178,7 +178,7 @@ func fzgo_clip_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, ctm
 //export fzgo_clip_stroke_text
 func fzgo_clip_stroke_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, stroke *C.cfz_stroke_state_t, ctm C.fz_matrix, scissor C.fz_rect) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(ClipStrokeText) {
+	if !device.ShouldCall(ClipStrokeText) {
 		return
 	}
 
@@ -193,7 +193,7 @@ func fzgo_clip_stroke_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text
 //export fzgo_ignore_text
 func fzgo_ignore_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, ctm C.fz_matrix) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(IgnoreText) {
+	if !device.ShouldCall(IgnoreText) {
 		return
 	}
 
@@ -206,7 +206,7 @@ func fzgo_ignore_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, c
 //export fzgo_clip_image_mask
 func fzgo_clip_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image, ctm C.fz_matrix, scissor C.fz_rect) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(ClipImageMask) {
+	if !device.ShouldCall(ClipImageMask) {
 		return
 	}
 
@@ -220,7 +220,7 @@ func fzgo_clip_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image
 //export fzgo_pop_clip
 func fzgo_pop_clip(ctx *C.fz_context, dev *C.fz_device) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(PopClip) {
+	if !device.ShouldCall(PopClip) {
 		return
 	}
 	device.PopClip()
@@ -229,7 +229,7 @@ func fzgo_pop_clip(ctx *C.fz_context, dev *C.fz_device) {
 //export fzgo_begin_mask
 func fzgo_begin_mask(ctx *C.fz_context, dev *C.fz_device, rect C.fz_rect, luminosity C.int, colorspace *C.fz_colorspace, color *C.cfloat_t, colorParams C.fz_color_params) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(BeginMask) {
+	if !device.ShouldCall(BeginMask) {
 		return
 	}
 
@@ -242,7 +242,7 @@ func fzgo_begin_mask(ctx *C.fz_context, dev *C.fz_device, rect C.fz_rect, lumino
 //export fzgo_end_mask
 func fzgo_end_mask(ctx *C.fz_context, dev *C.fz_device) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(EndMask) {
+	if !device.ShouldCall(EndMask) {
 		return
 	}
 	device.EndMask()
@@ -251,7 +251,7 @@ func fzgo_end_mask(ctx *C.fz_context, dev *C.fz_device) {
 //export fzgo_begin_group
 func fzgo_begin_group(ctx *C.fz_context, dev *C.fz_device, rect C.fz_rect, cs *C.fz_colorspace, isolated C.int, knockout C.int, blendmode C.int, alpha C.float) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(BeginGroup) {
+	if !device.ShouldCall(BeginGroup) {
 		return
 	}
 	r := rectFromFitz(rect)
@@ -267,7 +267,7 @@ func fzgo_begin_group(ctx *C.fz_context, dev *C.fz_device, rect C.fz_rect, cs *C
 //export fzgo_end_group
 func fzgo_end_group(ctx *C.fz_context, dev *C.fz_device) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(EndGroup) {
+	if !device.ShouldCall(EndGroup) {
 		return
 	}
 	device.EndGroup()
@@ -276,7 +276,7 @@ func fzgo_end_group(ctx *C.fz_context, dev *C.fz_device) {
 //export fzgo_begin_tile
 func fzgo_begin_tile(ctx *C.fz_context, dev *C.fz_device, area C.fz_rect, view C.fz_rect, xstep C.float, ystep C.float, ctm C.fz_matrix, ID C.int) C.int {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(BeginTile) {
+	if !device.ShouldCall(BeginTile) {
 		return 0
 	}
 	return C.int(device.BeginTile())
@@ -285,7 +285,7 @@ func fzgo_begin_tile(ctx *C.fz_context, dev *C.fz_device, area C.fz_rect, view C
 //export fzgo_end_tile
 func fzgo_end_tile(ctx *C.fz_context, dev *C.fz_device) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(EndTile) {
+	if !device.ShouldCall(EndTile) {
 		return
 	}
 	device.EndTile()
@@ -294,7 +294,7 @@ func fzgo_end_tile(ctx *C.fz_context, dev *C.fz_device) {
 //export fzgo_begin_layer
 func fzgo_begin_layer(ctx *C.fz_context, dev *C.fz_device, layerName *C.cchar_t) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(BeginLayer) {
+	if !device.ShouldCall(BeginLayer) {
 		return
 	}
 	device.BeginLayer(C.GoString(layerName))
@@ -303,7 +303,7 @@ func fzgo_begin_layer(ctx *C.fz_context, dev *C.fz_device, layerName *C.cchar_t)
 //export fzgo_end_layer
 func fzgo_end_layer(ctx *C.fz_context, dev *C.fz_device) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(GoDevice)
-	if !device.Methods().Has(EndLayer) {
+	if !device.ShouldCall(EndLayer) {
 		return
 	}
 	device.EndLayer()

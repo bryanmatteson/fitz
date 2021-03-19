@@ -9,10 +9,8 @@ type DisplayList struct {
 }
 
 func (list *DisplayList) Apply(device GoDevice) {
-	kinds := device.Methods()
-
 	for _, command := range list.Commands {
-		if !kinds.Has(command.Kind()) {
+		if !device.ShouldCall(command.Kind()) {
 			continue
 		}
 
