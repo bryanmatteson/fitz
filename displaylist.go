@@ -5,7 +5,8 @@ import (
 )
 
 type DisplayList struct {
-	Commands []GraphicsCommand
+	PageNumber int
+	Commands   []GraphicsCommand
 }
 
 func (list *DisplayList) Apply(device GoDevice) {
