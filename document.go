@@ -4,6 +4,7 @@ package fitz
 import "C"
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -13,6 +14,10 @@ import (
 	"sync"
 	"unsafe"
 )
+
+type PageRange struct {
+	Start, End int
+}
 
 type Document struct {
 	sync.Mutex
@@ -160,6 +165,37 @@ func (d *Document) Close() {
 	d.pages = nil
 	C.pdf_drop_document(d.ctx, d.native)
 	C.fz_drop_context(d.ctx)
+}
+
+func (d *Document) ExtractPageRanges(filePath string, ranges ...PageRange) error {
+	file, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	file.Close()
+
+	dest := C.pdf_create_document(d.ctx)
+	defer C.pdf_drop_document(d.ctx, dest)
+
+	graftMap := C.pdf_new_graft_map(d.ctx, dest)
+	defer C.pdf_drop_graft_map(d.ctx, graftMap)
+
+	pageCount := d.NumPages()
+
+	for _, rng := range ranges {
+		if rng.Start < 0 || rng.End > pageCount {
+			return errors.New("invalid page range")
+		}
+
+		C.pdf_graft_mapped_page(d.ctx, graftMap, C.int(rng.End), d.native, C.int(rng.Start))
+	}
+
+	options := C.pdf_write_options{}
+	output := C.CString(filePath)
+	defer C.free(unsafe.Pointer(output))
+
+	C.pdf_save_document(d.ctx, dest, output, &options)
+	return nil
 }
 
 func newDocument(ctx *C.fz_context, doc *C.pdf_document) *Document {
