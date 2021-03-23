@@ -59,7 +59,7 @@ func (p *Page) RenderImage(region Rect, scale float64) (img *image.RGBA, err err
 	C.fz_clear_pixmap_with_value(p.ctx, pixmap, C.int(0xff))
 	defer C.fz_drop_pixmap(p.ctx, pixmap)
 
-	device := C.fz_new_draw_device(p.ctx, ctm, pixmap)
+	device := C.fz_new_draw_device_with_bbox(p.ctx, ctm, pixmap, &bbox)
 	defer C.fz_drop_device(p.ctx, device)
 
 	C.fz_enable_device_hints(p.ctx, device, C.FZ_NO_CACHE)
@@ -72,8 +72,10 @@ func (p *Page) RenderImage(region Rect, scale float64) (img *image.RGBA, err err
 		return nil, ErrPixmapSamples
 	}
 
-	img.Pix = C.GoBytes(unsafe.Pointer(pixels), C.int(4*bbox.x1*bbox.y1))
-	img.Rect = image.Rect(int(bbox.x0), int(bbox.y0), int(bbox.x1), int(bbox.y1))
+	width := bbox.x1 - bbox.x0
+	height := bbox.y1 - bbox.y0
+	img.Pix = C.GoBytes(unsafe.Pointer(pixels), C.int(4*width*height))
+	img.Rect = image.Rect(0, 0, int(width), int(height))
 	img.Stride = 4 * img.Rect.Max.X
 
 	return img, nil
