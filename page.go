@@ -3,18 +3,14 @@ package fitz
 // #include "bridge.h"
 import "C"
 import (
-	"bytes"
 	"image"
-	"image/png"
 	"sync"
 	"unsafe"
 
 	"github.com/mattn/go-pointer"
-	"go.matteson.dev/tess"
 )
 
 type Page struct {
-	ocr    *tess.Client
 	number int
 	mut    sync.Mutex
 	ctx    *C.fz_context
@@ -23,13 +19,11 @@ type Page struct {
 }
 
 func newPage(ctx *C.fz_context, number C.int, bounds C.fz_rect, list *C.fz_display_list) *Page {
-	ocr := tess.NewClient()
-	return &Page{ctx: ctx, number: int(number), bounds: bounds, list: list, ocr: ocr}
+	return &Page{ctx: ctx, number: int(number), bounds: bounds, list: list}
 }
 
 func (p *Page) drop() {
 	C.fz_drop_display_list(p.ctx, p.list)
-	p.ocr.Close()
 	p.list = nil
 	p.ctx = nil
 }
@@ -149,19 +143,4 @@ func (p *Page) GetText() string {
 	defer C.fz_drop_buffer(p.ctx, buf)
 
 	return C.GoString(C.fz_string_from_buffer(p.ctx, buf))
-}
-
-func (p *Page) RecognizeText(region Rect, mag float64) (string, error) {
-	img, err := p.RenderImage(region, mag)
-	if err != nil {
-		return "", nil
-	}
-
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, img); err != nil {
-		return "", err
-	}
-
-	p.ocr.SetImageFromBytes(buf.Bytes())
-	return p.ocr.Text()
 }
