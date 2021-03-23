@@ -134,13 +134,9 @@ func (r Rect) Intersection(other Rect) Rect {
 	return Rect{xx, yy}
 }
 
-func (r Rect) Width() float64 { return r.X.Length() }
-
+func (r Rect) Width() float64  { return r.X.Length() }
 func (r Rect) Height() float64 { return r.Y.Length() }
-
-func (r Rect) IsEmpty() bool {
-	return EqualEpsilon(r.X.Max, r.X.Min) || EqualEpsilon(r.Y.Max, r.Y.Min)
-}
+func (r Rect) IsEmpty() bool   { return r.X.IsEmpty() || r.Y.IsEmpty() }
 
 type Point struct {
 	X, Y float64

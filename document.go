@@ -20,7 +20,7 @@ type PageRange struct {
 }
 
 type Document struct {
-	sync.Mutex
+	mut    sync.Mutex
 	ctx    *C.fz_context
 	native *C.pdf_document
 	pages  map[int]*Page
@@ -108,14 +108,14 @@ func (d *Document) LoadFonts() {
 }
 
 func (d *Document) NumPages() int {
-	d.Lock()
-	defer d.Unlock()
+	d.mut.Lock()
+	defer d.mut.Unlock()
 	return int(C.fz_count_pages(d.ctx, &d.native.super))
 }
 
 func (d *Document) LoadPage(num int) (*Page, error) {
-	d.Lock()
-	defer d.Unlock()
+	d.mut.Lock()
+	defer d.mut.Unlock()
 
 	if int(C.fz_count_pages(d.ctx, &d.native.super)) <= num {
 		return nil, ErrInvalidPage

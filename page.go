@@ -31,13 +31,23 @@ func (p *Page) drop() {
 func (p *Page) Number() int  { return p.number }
 func (p *Page) Bounds() Rect { return rectFromFitz(p.bounds) }
 
-func (p *Page) RenderImage(scale float64) (img *image.RGBA, err error) {
+func (p *Page) RenderImage(region Rect, scale float64) (img *image.RGBA, err error) {
 	p.mut.Lock()
 	defer p.mut.Unlock()
 	img = &image.RGBA{}
 
 	bounds := p.bounds
-	ctm := C.fz_scale(C.float(scale), C.float(scale))
+	ctm := C.fz_identity
+
+	if scale > 0 {
+		ctm = C.fz_scale(C.float(scale), C.float(scale))
+	}
+
+	if !region.IsEmpty() {
+		region = region.Intersection(p.Bounds())
+		bounds = C.fz_make_rect(C.float(region.X.Min), C.float(region.Y.Min), C.float(region.X.Max), C.float(region.Y.Max))
+	}
+
 	bounds = C.fz_transform_rect(bounds, ctm)
 	bbox := C.fz_round_rect(bounds)
 
