@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"go.matteson.dev/fitz"
+	"go.matteson.dev/gfx"
 )
 
 func TestPageRender(t *testing.T) {
@@ -18,7 +19,7 @@ func TestPageRender(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	img, err := pg.RenderImage(fitz.MakeRectWH(50, 50, 160, 30), 4)
+	img, err := pg.RenderImage(gfx.MakeRectWH(50, 50, 160, 30), 4)
 	// img, err := pg.RenderImage(fitz.EmptyRect(), 1)
 	if err != nil {
 		t.Fatal(err)

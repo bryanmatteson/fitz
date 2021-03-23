@@ -3,28 +3,30 @@ package fitz
 import (
 	"image/color"
 	"strings"
+
+	"go.matteson.dev/gfx"
 )
 
 type GoDevice interface {
 	ShouldCall(CommandKind) bool
 
-	FillPath(path *Path, fillRule FillRule, ctm Matrix, color color.Color)
-	StrokePath(path *Path, stroke *Stroke, ctm Matrix, color color.Color)
-	FillShade(shade *Shader, ctm Matrix, alpha float64)
-	FillImage(image *Image, ctm Matrix, alpha float64)
-	FillImageMask(image *Image, ctm Matrix, color color.Color)
-	ClipPath(path *Path, fillRule FillRule, ctm Matrix, scissor Rect)
-	ClipStrokePath(path *Path, stroke *Stroke, ctm Matrix, scissor Rect)
-	ClipImageMask(image *Image, ctm Matrix, scissor Rect)
-	FillText(text *Text, ctm Matrix, color color.Color)
-	StrokeText(text *Text, stroke *Stroke, ctm Matrix, color color.Color)
-	ClipText(text *Text, ctm Matrix, scissor Rect)
-	ClipStrokeText(text *Text, stroke *Stroke, ctm Matrix, scissor Rect)
-	IgnoreText(text *Text, ctm Matrix)
+	FillPath(path *gfx.Path, fillRule FillRule, ctm gfx.Matrix, color color.Color)
+	StrokePath(path *gfx.Path, stroke *Stroke, ctm gfx.Matrix, color color.Color)
+	FillShade(shade *Shader, ctm gfx.Matrix, alpha float64)
+	FillImage(image *Image, ctm gfx.Matrix, alpha float64)
+	FillImageMask(image *Image, ctm gfx.Matrix, color color.Color)
+	ClipPath(path *gfx.Path, fillRule FillRule, ctm gfx.Matrix, scissor gfx.Rect)
+	ClipStrokePath(path *gfx.Path, stroke *Stroke, ctm gfx.Matrix, scissor gfx.Rect)
+	ClipImageMask(image *Image, ctm gfx.Matrix, scissor gfx.Rect)
+	FillText(text *Text, ctm gfx.Matrix, color color.Color)
+	StrokeText(text *Text, stroke *Stroke, ctm gfx.Matrix, color color.Color)
+	ClipText(text *Text, ctm gfx.Matrix, scissor gfx.Rect)
+	ClipStrokeText(text *Text, stroke *Stroke, ctm gfx.Matrix, scissor gfx.Rect)
+	IgnoreText(text *Text, ctm gfx.Matrix)
 	PopClip()
-	BeginMask(rect Rect, color color.Color, luminosity int)
+	BeginMask(rect gfx.Rect, color color.Color, luminosity int)
 	EndMask()
-	BeginGroup(rect Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64)
+	BeginGroup(rect gfx.Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64)
 	EndGroup()
 	BeginTile() int
 	EndTile()
@@ -63,35 +65,35 @@ const (
 type BaseDevice struct{}
 
 func (dev *BaseDevice) ShouldCall(CommandKind) bool { return true }
-func (dev *BaseDevice) FillPath(path *Path, fillRule FillRule, matrix Matrix, color color.Color) {
+func (dev *BaseDevice) FillPath(path *gfx.Path, fillRule FillRule, matrix gfx.Matrix, color color.Color) {
 }
 
-func (dev *BaseDevice) StrokePath(path *Path, stroke *Stroke, matrix Matrix, color color.Color) {
+func (dev *BaseDevice) StrokePath(path *gfx.Path, stroke *Stroke, matrix gfx.Matrix, color color.Color) {
 }
 
-func (dev *BaseDevice) FillShade(shade *Shader, matrix Matrix, alpha float64)        {}
-func (dev *BaseDevice) FillImage(image *Image, matrix Matrix, alpha float64)         {}
-func (dev *BaseDevice) FillImageMask(image *Image, matrix Matrix, color color.Color) {}
-func (dev *BaseDevice) ClipPath(path *Path, fillRule FillRule, matrix Matrix, scissor Rect) {
+func (dev *BaseDevice) FillShade(shade *Shader, matrix gfx.Matrix, alpha float64)        {}
+func (dev *BaseDevice) FillImage(image *Image, matrix gfx.Matrix, alpha float64)         {}
+func (dev *BaseDevice) FillImageMask(image *Image, matrix gfx.Matrix, color color.Color) {}
+func (dev *BaseDevice) ClipPath(path *gfx.Path, fillRule FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *BaseDevice) ClipStrokePath(path *Path, stroke *Stroke, matrix Matrix, scissor Rect) {
+func (dev *BaseDevice) ClipStrokePath(path *gfx.Path, stroke *Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *BaseDevice) ClipImageMask(image *Image, matrix Matrix, scissor Rect) {}
-func (dev *BaseDevice) FillText(txt *Text, matrix Matrix, color color.Color)    {}
-func (dev *BaseDevice) StrokeText(txt *Text, stroke *Stroke, matrix Matrix, color color.Color) {
+func (dev *BaseDevice) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {}
+func (dev *BaseDevice) FillText(txt *Text, matrix gfx.Matrix, color color.Color)        {}
+func (dev *BaseDevice) StrokeText(txt *Text, stroke *Stroke, matrix gfx.Matrix, color color.Color) {
 }
 
-func (dev *BaseDevice) ClipText(txt *Text, matrix Matrix, scissor Rect) {}
-func (dev *BaseDevice) ClipStrokeText(txt *Text, stroke *Stroke, matrix Matrix, scissor Rect) {
+func (dev *BaseDevice) ClipText(txt *Text, matrix gfx.Matrix, scissor gfx.Rect) {}
+func (dev *BaseDevice) ClipStrokeText(txt *Text, stroke *Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *BaseDevice) IgnoreText(txt *Text, matrix Matrix)                    {}
-func (dev *BaseDevice) PopClip()                                               {}
-func (dev *BaseDevice) BeginMask(rect Rect, color color.Color, luminosity int) {}
-func (dev *BaseDevice) EndMask()                                               {}
-func (dev *BaseDevice) BeginGroup(rect Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64) {
+func (dev *BaseDevice) IgnoreText(txt *Text, matrix gfx.Matrix)                    {}
+func (dev *BaseDevice) PopClip()                                                   {}
+func (dev *BaseDevice) BeginMask(rect gfx.Rect, color color.Color, luminosity int) {}
+func (dev *BaseDevice) EndMask()                                                   {}
+func (dev *BaseDevice) BeginGroup(rect gfx.Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64) {
 }
 
 func (dev *BaseDevice) EndGroup()                   {}

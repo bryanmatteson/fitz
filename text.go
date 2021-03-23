@@ -5,6 +5,7 @@ import (
 	"unicode"
 
 	"github.com/ahmetb/go-linq"
+	"go.matteson.dev/gfx"
 )
 
 // Writing modes
@@ -21,14 +22,14 @@ func (l Letters) IsWhitespace() bool {
 
 type Letter struct {
 	Rune          rune
-	GlyphPath     *Path
-	GlyphBounds   Rect
+	GlyphPath     *gfx.Path
+	GlyphBounds   gfx.Rect
 	Font          *Font
 	Size          float64
 	Color         color.Color
-	Quad          Quad
-	StartBaseline Point
-	EndBaseline   Point
+	Quad          gfx.Quad
+	StartBaseline gfx.Point
+	EndBaseline   gfx.Point
 }
 
 func (l Letter) IsWhitespace() bool { return unicode.IsSpace(l.Rune) }
@@ -37,7 +38,7 @@ type TextSpan struct {
 	Font    *Font
 	WMode   int
 	Letters Letters
-	Quad    Quad
+	Quad    gfx.Quad
 }
 
 type Text struct {

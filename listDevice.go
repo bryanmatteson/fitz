@@ -2,6 +2,8 @@ package fitz
 
 import (
 	"image/color"
+
+	"go.matteson.dev/gfx"
 )
 
 type ListDevice struct {
@@ -16,7 +18,7 @@ func NewListDevice(displayList *DisplayList) GoDevice {
 }
 
 // FillPath implements the GoDevice interface
-func (dev *ListDevice) FillPath(path *Path, fillRule FillRule, matrix Matrix, color color.Color) {
+func (dev *ListDevice) FillPath(path *gfx.Path, fillRule FillRule, matrix gfx.Matrix, color color.Color) {
 	cmd := FillPathCommand{
 		Matrix:   matrix,
 		Path:     path,
@@ -27,7 +29,7 @@ func (dev *ListDevice) FillPath(path *Path, fillRule FillRule, matrix Matrix, co
 }
 
 // StrokePath implements the GoDevice interface
-func (dev *ListDevice) StrokePath(path *Path, stroke *Stroke, matrix Matrix, color color.Color) {
+func (dev *ListDevice) StrokePath(path *gfx.Path, stroke *Stroke, matrix gfx.Matrix, color color.Color) {
 	cmd := StrokePathCommand{
 		Matrix: matrix,
 		Path:   path,
@@ -38,7 +40,7 @@ func (dev *ListDevice) StrokePath(path *Path, stroke *Stroke, matrix Matrix, col
 }
 
 // FillShade implements the GoDevice interface
-func (dev *ListDevice) FillShade(shade *Shader, matrix Matrix, alpha float64) {
+func (dev *ListDevice) FillShade(shade *Shader, matrix gfx.Matrix, alpha float64) {
 	cmd := FillShadeCommand{
 		Matrix: matrix,
 		Alpha:  float64(alpha),
@@ -48,7 +50,7 @@ func (dev *ListDevice) FillShade(shade *Shader, matrix Matrix, alpha float64) {
 }
 
 // FillImage implements the GoDevice interface
-func (dev *ListDevice) FillImage(image *Image, matrix Matrix, alpha float64) {
+func (dev *ListDevice) FillImage(image *Image, matrix gfx.Matrix, alpha float64) {
 	cmd := FillImageCommand{
 		Matrix: matrix,
 		Image:  image,
@@ -58,7 +60,7 @@ func (dev *ListDevice) FillImage(image *Image, matrix Matrix, alpha float64) {
 }
 
 // FillImageMask implements the GoDevice interface
-func (dev *ListDevice) FillImageMask(image *Image, matrix Matrix, color color.Color) {
+func (dev *ListDevice) FillImageMask(image *Image, matrix gfx.Matrix, color color.Color) {
 	cmd := FillImageMaskCommand{
 		Matrix: matrix,
 		Image:  image,
@@ -68,7 +70,7 @@ func (dev *ListDevice) FillImageMask(image *Image, matrix Matrix, color color.Co
 }
 
 // ClipPath implements the GoDevice interface
-func (dev *ListDevice) ClipPath(path *Path, fillRule FillRule, matrix Matrix, scissor Rect) {
+func (dev *ListDevice) ClipPath(path *gfx.Path, fillRule FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipPathCommand{
 		Matrix:   matrix,
 		Path:     path,
@@ -79,7 +81,7 @@ func (dev *ListDevice) ClipPath(path *Path, fillRule FillRule, matrix Matrix, sc
 }
 
 // ClipStrokePath implements the GoDevice interface
-func (dev *ListDevice) ClipStrokePath(path *Path, stroke *Stroke, matrix Matrix, scissor Rect) {
+func (dev *ListDevice) ClipStrokePath(path *gfx.Path, stroke *Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipStrokePathCommand{
 		Matrix:  matrix,
 		Path:    path,
@@ -90,7 +92,7 @@ func (dev *ListDevice) ClipStrokePath(path *Path, stroke *Stroke, matrix Matrix,
 }
 
 // ClipImageMask implements the GoDevice interface
-func (dev *ListDevice) ClipImageMask(image *Image, matrix Matrix, scissor Rect) {
+func (dev *ListDevice) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipImageMaskCommand{
 		Matrix:  matrix,
 		Image:   image,
@@ -100,7 +102,7 @@ func (dev *ListDevice) ClipImageMask(image *Image, matrix Matrix, scissor Rect) 
 }
 
 // FillText implements the GoDevice interface
-func (dev *ListDevice) FillText(txt *Text, matrix Matrix, color color.Color) {
+func (dev *ListDevice) FillText(txt *Text, matrix gfx.Matrix, color color.Color) {
 	cmd := FillTextCommand{
 		Matrix: matrix,
 		Text:   txt,
@@ -110,7 +112,7 @@ func (dev *ListDevice) FillText(txt *Text, matrix Matrix, color color.Color) {
 }
 
 // StrokeText implements the GoDevice interface
-func (dev *ListDevice) StrokeText(txt *Text, stroke *Stroke, matrix Matrix, color color.Color) {
+func (dev *ListDevice) StrokeText(txt *Text, stroke *Stroke, matrix gfx.Matrix, color color.Color) {
 	cmd := StrokeTextCommand{
 		Matrix: matrix,
 		Text:   txt,
@@ -121,7 +123,7 @@ func (dev *ListDevice) StrokeText(txt *Text, stroke *Stroke, matrix Matrix, colo
 }
 
 // ClipText implements the GoDevice interface
-func (dev *ListDevice) ClipText(txt *Text, matrix Matrix, scissor Rect) {
+func (dev *ListDevice) ClipText(txt *Text, matrix gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipTextCommand{
 		Matrix:  matrix,
 		Text:    txt,
@@ -131,7 +133,7 @@ func (dev *ListDevice) ClipText(txt *Text, matrix Matrix, scissor Rect) {
 }
 
 // ClipStrokeText implements the GoDevice interface
-func (dev *ListDevice) ClipStrokeText(txt *Text, stroke *Stroke, matrix Matrix, scissor Rect) {
+func (dev *ListDevice) ClipStrokeText(txt *Text, stroke *Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipStrokeTextCommand{
 		Matrix:  matrix,
 		Text:    txt,
@@ -142,7 +144,7 @@ func (dev *ListDevice) ClipStrokeText(txt *Text, stroke *Stroke, matrix Matrix, 
 }
 
 // IgnoreText implements the GoDevice interface
-func (dev *ListDevice) IgnoreText(txt *Text, matrix Matrix) {
+func (dev *ListDevice) IgnoreText(txt *Text, matrix gfx.Matrix) {
 	cmd := IgnoreTextCommand{
 		Matrix: matrix,
 		Text:   txt,
@@ -156,7 +158,7 @@ func (dev *ListDevice) PopClip() {
 }
 
 // BeginMask implements the GoDevice interface
-func (dev *ListDevice) BeginMask(rect Rect, color color.Color, luminosity int) {
+func (dev *ListDevice) BeginMask(rect gfx.Rect, color color.Color, luminosity int) {
 	cmd := BeginMaskCommand{
 		Rect:       rect,
 		Luminosity: luminosity,
@@ -171,7 +173,7 @@ func (dev *ListDevice) EndMask() {
 }
 
 // BeginGroup implements the GoDevice interface
-func (dev *ListDevice) BeginGroup(rect Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64) {
+func (dev *ListDevice) BeginGroup(rect gfx.Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64) {
 	cmd := BeginGroupCommand{
 		Rect:      rect,
 		Isolated:  isolated,
@@ -218,8 +220,8 @@ type GraphicsCommand interface {
 }
 
 type FillPathCommand struct {
-	Matrix   Matrix
-	Path     *Path
+	Matrix   gfx.Matrix
+	Path     *gfx.Path
 	FillRule FillRule
 	Color    color.Color
 }
@@ -227,8 +229,8 @@ type FillPathCommand struct {
 func (c FillPathCommand) Kind() CommandKind { return FillPath }
 
 type StrokePathCommand struct {
-	Matrix Matrix
-	Path   *Path
+	Matrix gfx.Matrix
+	Path   *gfx.Path
 	Stroke *Stroke
 	Color  color.Color
 }
@@ -236,7 +238,7 @@ type StrokePathCommand struct {
 func (c StrokePathCommand) Kind() CommandKind { return StrokePath }
 
 type FillShadeCommand struct {
-	Matrix Matrix
+	Matrix gfx.Matrix
 	Shader *Shader
 	Alpha  float64
 }
@@ -244,7 +246,7 @@ type FillShadeCommand struct {
 func (c FillShadeCommand) Kind() CommandKind { return FillShade }
 
 type FillImageCommand struct {
-	Matrix Matrix
+	Matrix gfx.Matrix
 	Image  *Image
 	Alpha  float64
 }
@@ -252,7 +254,7 @@ type FillImageCommand struct {
 func (c FillImageCommand) Kind() CommandKind { return FillImage }
 
 type FillImageMaskCommand struct {
-	Matrix Matrix
+	Matrix gfx.Matrix
 	Image  *Image
 	Color  color.Color
 }
@@ -260,33 +262,33 @@ type FillImageMaskCommand struct {
 func (c FillImageMaskCommand) Kind() CommandKind { return FillImageMask }
 
 type ClipPathCommand struct {
-	Matrix   Matrix
-	Path     *Path
+	Matrix   gfx.Matrix
+	Path     *gfx.Path
 	FillRule FillRule
-	Scissor  Rect
+	Scissor  gfx.Rect
 }
 
 func (c ClipPathCommand) Kind() CommandKind { return ClipPath }
 
 type ClipStrokePathCommand struct {
-	Matrix  Matrix
-	Path    *Path
+	Matrix  gfx.Matrix
+	Path    *gfx.Path
 	Stroke  *Stroke
-	Scissor Rect
+	Scissor gfx.Rect
 }
 
 func (c ClipStrokePathCommand) Kind() CommandKind { return ClipStrokePath }
 
 type ClipImageMaskCommand struct {
-	Matrix  Matrix
+	Matrix  gfx.Matrix
 	Image   *Image
-	Scissor Rect
+	Scissor gfx.Rect
 }
 
 func (c ClipImageMaskCommand) Kind() CommandKind { return ClipImageMask }
 
 type FillTextCommand struct {
-	Matrix Matrix
+	Matrix gfx.Matrix
 	Text   *Text
 	Color  color.Color
 }
@@ -294,7 +296,7 @@ type FillTextCommand struct {
 func (c FillTextCommand) Kind() CommandKind { return FillText }
 
 type StrokeTextCommand struct {
-	Matrix Matrix
+	Matrix gfx.Matrix
 	Text   *Text
 	Stroke *Stroke
 	Color  color.Color
@@ -303,24 +305,24 @@ type StrokeTextCommand struct {
 func (c StrokeTextCommand) Kind() CommandKind { return StrokeText }
 
 type ClipTextCommand struct {
-	Matrix  Matrix
+	Matrix  gfx.Matrix
 	Text    *Text
-	Scissor Rect
+	Scissor gfx.Rect
 }
 
 func (c ClipTextCommand) Kind() CommandKind { return ClipText }
 
 type ClipStrokeTextCommand struct {
-	Matrix  Matrix
+	Matrix  gfx.Matrix
 	Text    *Text
 	Stroke  *Stroke
-	Scissor Rect
+	Scissor gfx.Rect
 }
 
 func (c ClipStrokeTextCommand) Kind() CommandKind { return ClipStrokeText }
 
 type IgnoreTextCommand struct {
-	Matrix Matrix
+	Matrix gfx.Matrix
 	Text   *Text
 }
 
@@ -331,7 +333,7 @@ type PopClipCommand struct{}
 func (c PopClipCommand) Kind() CommandKind { return PopClip }
 
 type BeginMaskCommand struct {
-	Rect       Rect
+	Rect       gfx.Rect
 	Color      color.Color
 	Luminosity int
 }
@@ -343,7 +345,7 @@ type EndMaskCommand struct{}
 func (c EndMaskCommand) Kind() CommandKind { return EndMask }
 
 type BeginGroupCommand struct {
-	Rect       Rect
+	Rect       gfx.Rect
 	Colorspace *Colorspace
 	Isolated   bool
 	Knockout   bool

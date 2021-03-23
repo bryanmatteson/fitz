@@ -8,6 +8,7 @@ import (
 	"unsafe"
 
 	"github.com/mattn/go-pointer"
+	"go.matteson.dev/gfx"
 )
 
 type Page struct {
@@ -28,10 +29,10 @@ func (p *Page) drop() {
 	p.ctx = nil
 }
 
-func (p *Page) Number() int  { return p.number }
-func (p *Page) Bounds() Rect { return rectFromFitz(p.bounds) }
+func (p *Page) Number() int      { return p.number }
+func (p *Page) Bounds() gfx.Rect { return rectFromFitz(p.bounds) }
 
-func (p *Page) RenderImage(region Rect, scale float64) (img *image.RGBA, err error) {
+func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err error) {
 	p.mut.Lock()
 	defer p.mut.Unlock()
 	img = &image.RGBA{}

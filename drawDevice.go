@@ -6,20 +6,21 @@ import (
 
 	"github.com/llgcode/draw2d"
 	"github.com/llgcode/draw2d/draw2dimg"
+	"go.matteson.dev/gfx"
 )
 
 type DrawDevice struct {
 	BaseDevice
 	image     image.Image
 	context   *draw2dimg.GraphicContext
-	transform Matrix
+	transform gfx.Matrix
 }
 
-func NewDrawDevice(transform Matrix, dest *image.RGBA) GoDevice {
+func NewDrawDevice(transform gfx.Matrix, dest *image.RGBA) GoDevice {
 	return &DrawDevice{image: dest, context: draw2dimg.NewGraphicContext(dest), transform: transform}
 }
 
-func (dev *DrawDevice) FillPath(path *Path, fillRule FillRule, ctm Matrix, fillColor color.Color) {
+func (dev *DrawDevice) FillPath(path *gfx.Path, fillRule FillRule, ctm gfx.Matrix, fillColor color.Color) {
 	trm := ctm.Concat(dev.transform)
 	dev.context.SetMatrixTransform(toDrawMatrix(trm))
 	drawPath(dev.context, path)
@@ -28,7 +29,7 @@ func (dev *DrawDevice) FillPath(path *Path, fillRule FillRule, ctm Matrix, fillC
 	dev.context.Fill()
 }
 
-func (dev *DrawDevice) StrokePath(path *Path, stroke *Stroke, ctm Matrix, strokeColor color.Color) {
+func (dev *DrawDevice) StrokePath(path *gfx.Path, stroke *Stroke, ctm gfx.Matrix, strokeColor color.Color) {
 	trm := ctm.Concat(dev.transform)
 	dev.context.SetMatrixTransform(toDrawMatrix(trm))
 	drawPath(dev.context, path)
@@ -40,9 +41,9 @@ func (dev *DrawDevice) StrokePath(path *Path, stroke *Stroke, ctm Matrix, stroke
 	dev.context.Stroke()
 }
 
-func (dev *DrawDevice) FillShade(shade *Shader, ctm Matrix, alpha float64) {}
+func (dev *DrawDevice) FillShade(shade *Shader, ctm gfx.Matrix, alpha float64) {}
 
-func (dev *DrawDevice) FillImage(image *Image, ctm Matrix, alpha float64) {
+func (dev *DrawDevice) FillImage(image *Image, ctm gfx.Matrix, alpha float64) {
 	trm := ctm.Concat(dev.transform)
 	dev.context.Save()
 
@@ -55,14 +56,14 @@ func (dev *DrawDevice) FillImage(image *Image, ctm Matrix, alpha float64) {
 	dev.context.DrawImage(image)
 }
 
-func (dev *DrawDevice) FillImageMask(image *Image, ctm Matrix, color color.Color) {}
-func (dev *DrawDevice) ClipPath(path *Path, fillRule FillRule, ctm Matrix, scissor Rect) {
+func (dev *DrawDevice) FillImageMask(image *Image, ctm gfx.Matrix, color color.Color) {}
+func (dev *DrawDevice) ClipPath(path *gfx.Path, fillRule FillRule, ctm gfx.Matrix, scissor gfx.Rect) {
 }
-func (dev *DrawDevice) ClipStrokePath(path *Path, stroke *Stroke, ctm Matrix, scissor Rect) {
+func (dev *DrawDevice) ClipStrokePath(path *gfx.Path, stroke *Stroke, ctm gfx.Matrix, scissor gfx.Rect) {
 }
-func (dev *DrawDevice) ClipImageMask(image *Image, ctm Matrix, scissor Rect) {}
+func (dev *DrawDevice) ClipImageMask(image *Image, ctm gfx.Matrix, scissor gfx.Rect) {}
 
-func (dev *DrawDevice) FillText(text *Text, ctm Matrix, fillColor color.Color) {
+func (dev *DrawDevice) FillText(text *Text, ctm gfx.Matrix, fillColor color.Color) {
 	ctm = ctm.Concat(dev.transform)
 	dev.context.SetMatrixTransform(toDrawMatrix(ctm))
 
@@ -75,7 +76,7 @@ func (dev *DrawDevice) FillText(text *Text, ctm Matrix, fillColor color.Color) {
 	}
 }
 
-func (dev *DrawDevice) StrokeText(text *Text, stroke *Stroke, ctm Matrix, color color.Color) {
+func (dev *DrawDevice) StrokeText(text *Text, stroke *Stroke, ctm gfx.Matrix, color color.Color) {
 	ctm = ctm.Concat(dev.transform)
 	dev.context.SetMatrixTransform(toDrawMatrix(ctm))
 
@@ -93,15 +94,15 @@ func (dev *DrawDevice) StrokeText(text *Text, stroke *Stroke, ctm Matrix, color 
 	}
 }
 
-func (dev *DrawDevice) ClipText(text *Text, ctm Matrix, scissor Rect) {}
-func (dev *DrawDevice) ClipStrokeText(text *Text, stroke *Stroke, ctm Matrix, scissor Rect) {
+func (dev *DrawDevice) ClipText(text *Text, ctm gfx.Matrix, scissor gfx.Rect) {}
+func (dev *DrawDevice) ClipStrokeText(text *Text, stroke *Stroke, ctm gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *DrawDevice) IgnoreText(text *Text, ctm Matrix)                      {}
-func (dev *DrawDevice) PopClip()                                               {}
-func (dev *DrawDevice) BeginMask(rect Rect, color color.Color, luminosity int) {}
-func (dev *DrawDevice) EndMask()                                               {}
-func (dev *DrawDevice) BeginGroup(rect Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64) {
+func (dev *DrawDevice) IgnoreText(text *Text, ctm gfx.Matrix)                      {}
+func (dev *DrawDevice) PopClip()                                                   {}
+func (dev *DrawDevice) BeginMask(rect gfx.Rect, color color.Color, luminosity int) {}
+func (dev *DrawDevice) EndMask()                                                   {}
+func (dev *DrawDevice) BeginGroup(rect gfx.Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64) {
 }
 func (dev *DrawDevice) EndGroup()                   {}
 func (dev *DrawDevice) BeginTile() int              { return 0 }
@@ -110,25 +111,25 @@ func (dev *DrawDevice) BeginLayer(layerName string) {}
 func (dev *DrawDevice) EndLayer()                   {}
 func (dev *DrawDevice) Close()                      {}
 
-func drawPath(ctx *draw2dimg.GraphicContext, path *Path) {
+func drawPath(ctx *draw2dimg.GraphicContext, path *gfx.Path) {
 	var j = 0
 	for _, cmd := range path.Components {
 		switch cmd {
-		case MoveToComp:
+		case gfx.MoveToComp:
 			ctx.MoveTo(path.Points[j].X, path.Points[j].Y)
-		case LineToComp:
+		case gfx.LineToComp:
 			ctx.LineTo(path.Points[j].X, path.Points[j].Y)
-		case QuadCurveToComp:
+		case gfx.QuadCurveToComp:
 			ctx.QuadCurveTo(path.Points[j].X, path.Points[j].Y, path.Points[j+1].X, path.Points[j+1].Y)
-		case CubicCurveToComp:
+		case gfx.CubicCurveToComp:
 			ctx.CubicCurveTo(path.Points[j].X, path.Points[j].Y, path.Points[j+1].X, path.Points[j+1].Y, path.Points[j+2].X, path.Points[j+2].Y)
-		case ClosePathComp:
+		case gfx.ClosePathComp:
 			ctx.Close()
 		}
 		j += cmd.PointCount()
 	}
 }
 
-func toDrawMatrix(mat Matrix) draw2d.Matrix {
+func toDrawMatrix(mat gfx.Matrix) draw2d.Matrix {
 	return draw2d.Matrix{mat.A, mat.B, mat.C, mat.D, mat.E, mat.F}
 }

@@ -3,11 +3,13 @@ package fitz
 import (
 	"image"
 	"image/color"
+
+	"go.matteson.dev/gfx"
 )
 
 type Image struct {
-	Rect  Rect
-	Frame Rect
+	Rect  gfx.Rect
+	Frame gfx.Rect
 
 	Data    []byte
 	Stride  int

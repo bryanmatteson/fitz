@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/mattn/go-pointer"
+	"go.matteson.dev/gfx"
 )
 
 //export fzgo_fill_path
@@ -17,7 +18,7 @@ func fzgo_fill_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, eve
 
 	p := makePath(ctx, path)
 	rgb := getRGBColor(ctx, color, colorspace, alpha, colorParams)
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 
 	fillRule := FillRuleWinding
 	if evenOdd != 0 {
@@ -35,7 +36,7 @@ func fzgo_stroke_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, s
 	}
 
 	p := makePath(ctx, path)
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	rgb := getRGBColor(ctx, color, colorspace, alpha, colorParams)
 	s := getStroke(stroke)
 
@@ -49,8 +50,8 @@ func fzgo_fill_shade(ctx *C.fz_context, dev *C.fz_device, shade *C.fz_shade, ctm
 		return
 	}
 
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
-	shaderMatrix := NewMatrix(float64(shade.matrix.a), float64(shade.matrix.b), float64(shade.matrix.c), float64(shade.matrix.d), float64(shade.matrix.e), float64(shade.matrix.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	shaderMatrix := gfx.NewMatrix(float64(shade.matrix.a), float64(shade.matrix.b), float64(shade.matrix.c), float64(shade.matrix.d), float64(shade.matrix.e), float64(shade.matrix.f))
 	bounds := rectFromFitz(C.fz_bound_shade(ctx, shade, C.fz_identity))
 
 	shader := &Shader{
@@ -78,7 +79,7 @@ func fzgo_fill_image(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image, ctm
 		return
 	}
 
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	im := getImage(ctx, ctm, image, colorParams)
 
 	device.FillImage(im, matrix, float64(alpha))
@@ -92,7 +93,7 @@ func fzgo_fill_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image
 		return
 	}
 
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	rgb := getRGBColor(ctx, color, colorspace, alpha, colorParams)
 	im := getImage(ctx, ctm, image, colorParams)
 
@@ -107,7 +108,7 @@ func fzgo_clip_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, eve
 	}
 
 	p := makePath(ctx, path)
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	sci := rectFromFitz(scissor)
 	fillRule := FillRuleWinding
 	if evenOdd != 0 {
@@ -125,7 +126,7 @@ func fzgo_clip_stroke_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path
 	}
 
 	p := makePath(ctx, path)
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	sci := rectFromFitz(scissor)
 	s := getStroke(stroke)
 
@@ -141,7 +142,7 @@ func fzgo_fill_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, ctm
 
 	rgb := getRGBColor(ctx, color, colorspace, alpha, colorParams)
 	txt := getTextInfo(ctx, text, ctm, rgb)
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 
 	device.FillText(txt, matrix, rgb)
 }
@@ -156,7 +157,7 @@ func fzgo_stroke_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, s
 	rgb := getRGBColor(ctx, color, colorspace, alpha, colorParams)
 	txt := getTextInfo(ctx, text, ctm, rgb)
 	s := getStroke(stroke)
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 
 	device.StrokeText(txt, s, matrix, rgb)
 }
@@ -168,7 +169,7 @@ func fzgo_clip_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, ctm
 		return
 	}
 
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	sci := rectFromFitz(scissor)
 	txt := getTextInfo(ctx, text, ctm, nil)
 
@@ -182,7 +183,7 @@ func fzgo_clip_stroke_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text
 		return
 	}
 
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	sci := rectFromFitz(scissor)
 	s := getStroke(stroke)
 	txt := getTextInfo(ctx, text, ctm, nil)
@@ -197,7 +198,7 @@ func fzgo_ignore_text(ctx *C.fz_context, dev *C.fz_device, text *C.cfz_text_t, c
 		return
 	}
 
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	txt := getTextInfo(ctx, text, ctm, nil)
 
 	device.IgnoreText(txt, matrix)
@@ -210,7 +211,7 @@ func fzgo_clip_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image
 		return
 	}
 
-	matrix := NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
+	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	sci := rectFromFitz(scissor)
 	im := getImage(ctx, ctm, image, C.fz_default_color_params)
 
@@ -317,36 +318,36 @@ func fzgo_close_device(ctx *C.fz_context, dev *C.fz_device) {
 
 //export gopath_moveto
 func gopath_moveto(ctx *C.fz_context, arg *C.void, x C.float, y C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
 	walker.MoveTo(float64(x), float64(y))
 }
 
 //export gopath_lineto
 func gopath_lineto(ctx *C.fz_context, arg *C.void, x C.float, y C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
 	walker.LineTo(float64(x), float64(y))
 }
 
 //export gopath_curveto
 func gopath_curveto(ctx *C.fz_context, arg *C.void, x1 C.float, y1 C.float, x2 C.float, y2 C.float, x3 C.float, y3 C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
 	walker.CubicCurveTo(float64(x1), float64(y1), float64(x2), float64(y2), float64(x3), float64(y3))
 }
 
 //export gopath_quadto
 func gopath_quadto(ctx *C.fz_context, arg *C.void, x1 C.float, y1 C.float, x2 C.float, y2 C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
 	walker.QuadCurveTo(float64(x1), float64(y1), float64(x2), float64(y2))
 }
 
 //export gopath_closepath
 func gopath_closepath(ctx *C.fz_context, arg *C.void) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
 	walker.ClosePath()
 }
 
-func makePath(ctx *C.fz_context, path *C.fz_path) *Path {
-	p := &Path{}
+func makePath(ctx *C.fz_context, path *C.fz_path) *gfx.Path {
+	p := &gfx.Path{}
 
 	ref := pointer.Save(p)
 	defer pointer.Unref(ref)

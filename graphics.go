@@ -1,5 +1,7 @@
 package fitz
 
+import "go.matteson.dev/gfx"
+
 type FillRule int
 
 const (
@@ -117,8 +119,8 @@ const (
 
 type Shader struct {
 	Kind   ShaderKind
-	Matrix Matrix
-	Bounds Rect
+	Matrix gfx.Matrix
+	Bounds gfx.Rect
 }
 
 type Stroke struct {

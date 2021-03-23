@@ -5,14 +5,16 @@ import "C"
 import (
 	"image/color"
 	"unsafe"
+
+	"go.matteson.dev/gfx"
 )
 
-func rectFromFitz(rect C.fz_rect) Rect {
-	return MakeRectCorners(float64(rect.x0), float64(rect.y0), float64(rect.x1), float64(rect.y1))
+func rectFromFitz(rect C.fz_rect) gfx.Rect {
+	return gfx.MakeRectCorners(float64(rect.x0), float64(rect.y0), float64(rect.x1), float64(rect.y1))
 }
 
-func matrixFromFitz(trm C.fz_matrix) Matrix {
-	return NewMatrix(float64(trm.a), float64(trm.b), float64(trm.c), float64(trm.d), float64(trm.e), float64(trm.f))
+func matrixFromFitz(trm C.fz_matrix) gfx.Matrix {
+	return gfx.NewMatrix(float64(trm.a), float64(trm.b), float64(trm.c), float64(trm.d), float64(trm.e), float64(trm.f))
 }
 
 func isFontDesc(ctx *C.fz_context, obj *C.pdf_obj) bool {
@@ -80,7 +82,7 @@ func getImage(ctx *C.fz_context, ctm C.fz_matrix, img *C.fz_image, colorParams C
 	bounds := C.fz_transform_rect(C.fz_unit_rect, ctm)
 
 	return &Image{
-		Rect:    MakeRectCorners(float64(x), float64(y), float64(x+width), float64(y+height)),
+		Rect:    gfx.MakeRectCorners(float64(x), float64(y), float64(x+width), float64(y+height)),
 		Frame:   rectFromFitz(bounds),
 		Data:    data,
 		Stride:  stride,
@@ -97,7 +99,7 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 
 		spanMat := matrixFromFitz(span.trm)
 		letters := make(Letters, 0, span.len)
-		quads := make(Quads, 0, span.len)
+		quads := make(gfx.Quads, 0, span.len)
 
 		for i := 0; i < int(span.len); i++ {
 			item := (*C.fz_text_item)(unsafe.Pointer(uintptr(unsafe.Pointer(span.items)) + uintptr(i)*unsafe.Sizeof(*span.items)))
@@ -112,7 +114,7 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 				adv = float64(C.fz_advance_glyph(ctx, span.font, item.gid, wmode))
 			}
 
-			var dir, p, q, a, d Point
+			var dir, p, q, a, d gfx.Point
 			if wmode == 0 {
 				dir.X, dir.Y = 1, 0
 			} else {
@@ -137,22 +139,22 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 			a = trm.TransformVec(a)
 			d = trm.TransformVec(d)
 
-			quad := Quad{
-				BottomLeft:  Point{X: p.X + d.X, Y: p.Y + d.Y},
-				TopLeft:     Point{X: p.X + a.X, Y: p.Y + a.Y},
-				BottomRight: Point{X: q.X + d.X, Y: q.Y + d.Y},
-				TopRight:    Point{X: q.X + a.X, Y: q.Y + a.Y},
+			quad := gfx.Quad{
+				BottomLeft:  gfx.Point{X: p.X + d.X, Y: p.Y + d.Y},
+				TopLeft:     gfx.Point{X: p.X + a.X, Y: p.Y + a.Y},
+				BottomRight: gfx.Point{X: q.X + d.X, Y: q.Y + d.Y},
+				TopRight:    gfx.Point{X: q.X + a.X, Y: q.Y + a.Y},
 			}
 
 			mat := C.fz_matrix{C.float(trm.A), C.float(trm.B), C.float(trm.C), C.float(trm.D), C.float(trm.E), C.float(trm.F)}
 
 			gb := C.fz_bound_glyph(ctx, span.font, item.gid, mat)
-			glyphBounds := MakeRectCorners(
+			glyphBounds := gfx.MakeRectCorners(
 				float64(gb.x0), float64(gb.y0),
 				float64(gb.x1), float64(gb.y1),
 			)
 			glyphPath := C.fz_outline_glyph(ctx, span.font, item.gid, mat)
-			quad = RectToQuad(glyphBounds)
+			quad = gfx.RectToQuad(glyphBounds)
 			quads = append(quads, quad)
 
 			letter := Letter{
