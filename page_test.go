@@ -18,8 +18,8 @@ func TestPageRender(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// img, err := pg.RenderImage(fitz.MakeRectWH(50, 50, 150, 60), 4)
-	img, err := pg.RenderImage(fitz.EmptyRect(), 1)
+	img, err := pg.RenderImage(fitz.MakeRectWH(50, 50, 160, 30), 4)
+	// img, err := pg.RenderImage(fitz.EmptyRect(), 1)
 	if err != nil {
 		t.Fatal(err)
 	}
