@@ -4,7 +4,6 @@ package fitz
 import "C"
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -167,35 +166,32 @@ func (d *Document) Close() {
 	C.fz_drop_context(d.ctx)
 }
 
-func (d *Document) ExtractPageRanges(filePath string, ranges ...PageRange) error {
+func (d *Document) Save(filePath string) error {
 	file, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
 	file.Close()
 
-	dest := C.pdf_create_document(d.ctx)
-	defer C.pdf_drop_document(d.ctx, dest)
-
-	graftMap := C.pdf_new_graft_map(d.ctx, dest)
-	defer C.pdf_drop_graft_map(d.ctx, graftMap)
-
-	pageCount := d.NumPages()
-
-	for _, rng := range ranges {
-		if rng.Start < 0 || rng.End > pageCount {
-			return errors.New("invalid page range")
-		}
-
-		C.pdf_graft_mapped_page(d.ctx, graftMap, C.int(rng.End), d.native, C.int(rng.Start))
-	}
-
 	options := C.pdf_write_options{}
 	output := C.CString(filePath)
 	defer C.free(unsafe.Pointer(output))
 
-	C.pdf_save_document(d.ctx, dest, output, &options)
+	C.pdf_save_document(d.ctx, d.native, output, &options)
 	return nil
+}
+
+func (d *Document) NewDocumentFromPages(pages ...int) (*Document, error) {
+	destCtx := C.fz_clone_context(d.ctx)
+	dest := C.pdf_create_document(destCtx)
+
+	graftMap := C.pdf_new_graft_map(destCtx, dest)
+	defer C.pdf_drop_graft_map(destCtx, graftMap)
+
+	for _, pg := range pages {
+		C.pdf_graft_mapped_page(destCtx, graftMap, C.int(-1), d.native, C.int(pg))
+	}
+	return newDocument(destCtx, dest), nil
 }
 
 func newDocument(ctx *C.fz_context, doc *C.pdf_document) *Document {
