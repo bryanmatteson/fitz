@@ -98,7 +98,7 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 		bbox := C.fz_font_bbox(ctx, span.font)
 
 		spanMat := matrixFromFitz(span.trm)
-		letters := make(Letters, 0, span.len)
+		letters := make([]Letter, 0, span.len)
 		quads := make(gfx.Quads, 0, span.len)
 
 		for i := 0; i < int(span.len); i++ {

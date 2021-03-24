@@ -1,8 +1,10 @@
 package fitz
 
 import (
+	"bytes"
 	"image"
 	"image/color"
+	"image/png"
 
 	"go.matteson.dev/gfx"
 )
@@ -22,6 +24,12 @@ func (img Image) ColorModel() color.Model {
 
 func (img Image) Bounds() image.Rectangle {
 	return image.Rect(int(img.Rect.X.Min), int(img.Rect.Y.Min), int(img.Rect.X.Max), int(img.Rect.Y.Max))
+}
+
+func (img Image) PngBytes() []byte {
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
+	return buf.Bytes()
 }
 
 func (img Image) At(x, y int) color.Color {

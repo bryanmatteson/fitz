@@ -126,8 +126,7 @@ func (d *Document) LoadPage(num int) (*Page, error) {
 
 		list := C.fz_new_display_list_from_page(d.ctx, pg)
 		bounds := C.fz_bound_page(d.ctx, pg)
-		number := pg.number
-		d.pages[num] = newPage(C.fz_clone_context(d.ctx), number, bounds, list)
+		d.pages[num] = newPage(C.fz_clone_context(d.ctx), num, bounds, list)
 	}
 
 	return d.pages[num], nil

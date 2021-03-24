@@ -4,7 +4,6 @@ import (
 	"image/color"
 	"unicode"
 
-	"github.com/ahmetb/go-linq"
 	"go.matteson.dev/gfx"
 )
 
@@ -13,12 +12,6 @@ const (
 	WModeHorizontal int = iota
 	WModeVertical
 )
-
-type Letters []Letter
-
-func (l Letters) IsWhitespace() bool {
-	return linq.From(l).All(func(i interface{}) bool { return i.(*Letter).IsWhitespace() })
-}
 
 type Letter struct {
 	Rune          rune
@@ -37,7 +30,7 @@ func (l Letter) IsWhitespace() bool { return unicode.IsSpace(l.Rune) }
 type TextSpan struct {
 	Font    *Font
 	WMode   int
-	Letters Letters
+	Letters []Letter
 	Quad    gfx.Quad
 }
 

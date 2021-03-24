@@ -19,8 +19,8 @@ type Page struct {
 	bounds C.fz_rect
 }
 
-func newPage(ctx *C.fz_context, number C.int, bounds C.fz_rect, list *C.fz_display_list) *Page {
-	return &Page{ctx: ctx, number: int(number), bounds: bounds, list: list}
+func newPage(ctx *C.fz_context, number int, bounds C.fz_rect, list *C.fz_display_list) *Page {
+	return &Page{ctx: ctx, number: number, bounds: bounds, list: list}
 }
 
 func (p *Page) drop() {
