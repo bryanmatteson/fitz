@@ -32,7 +32,12 @@ func TestContent(t *testing.T) {
 		p.RunDevice(fitz.NewListDevice(&displayList))
 
 		var content fitz.PageContent
-		displayList.Apply(fitz.NewContentDevice(&content))
+		displayList.Apply(fitz.NewContentDevice(&content,
+			fitz.WithOCR().
+				WithMinConfidence(35).
+				WithMinLetterWidth(5).
+				WithMinImageSize(p.Bounds().Width()/2, p.Bounds().Height()/2),
+		))
 
 		ctx := draw2dimg.NewGraphicContext(img)
 		ctx.SetMatrixTransform(draw2d.NewScaleMatrix(5, 5))
