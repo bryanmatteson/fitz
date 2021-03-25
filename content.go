@@ -1,7 +1,11 @@
 package fitz
 
 import (
+	"bytes"
+	"image"
 	"image/color"
+	"image/png"
+	"log"
 
 	"go.matteson.dev/fitz/internal/dla"
 	"go.matteson.dev/gfx"
@@ -17,11 +21,14 @@ type PageContent struct {
 
 type ContentDevice struct {
 	BaseDevice
-	options *contentopts
-	content *PageContent
-	ocr     *tess.Client
-	letters gfx.Chars
-	words   gfx.TextWords
+	ocrEnabled bool
+	ocrOpts    *ocroptions
+	content    *PageContent
+	ocr        *tess.Client
+	letters    gfx.Chars
+	words      gfx.TextWords
+	drawDevice GoDevice
+	img        *image.RGBA
 }
 
 func NewContentDevice(content *PageContent, opts ...ContentOption) GoDevice {
@@ -35,11 +42,26 @@ func NewContentDevice(content *PageContent, opts ...ContentOption) GoDevice {
 		ocr = tess.NewClient()
 	}
 
-	return &ContentDevice{content: content, options: &options, ocr: ocr}
+	var drawdev GoDevice
+	var img *image.RGBA
+	if options.ocropts.NonImageAreas {
+		bounds := options.ocropts.PageBounds
+		img = image.NewRGBA(image.Rect(int(bounds.X.Min), int(bounds.Y.Min), int(bounds.X.Max), int(bounds.Y.Max)))
+		drawdev = NewDrawDevice(gfx.IdentityMatrix, img)
+	}
+
+	return &ContentDevice{
+		content:    content,
+		ocrEnabled: options.ocrEnabled,
+		ocrOpts:    options.ocropts,
+		ocr:        ocr,
+		img:        img,
+		drawDevice: drawdev,
+	}
 }
 
 func (dev *ContentDevice) ShouldCall(kind CommandKind) bool {
-	handles := FillText | FillImage | CloseDevice
+	handles := FillText | FillImage | FillPath | StrokePath | CloseDevice
 	return handles.Has(kind)
 }
 
@@ -60,22 +82,28 @@ func (dev *ContentDevice) FillText(text *Text, ctm gfx.Matrix, fillColor color.C
 }
 
 func (dev *ContentDevice) FillPath(path *gfx.Path, fillRule FillRule, matrix gfx.Matrix, color color.Color) {
+	if dev.ocrEnabled && dev.ocrOpts.NonImageAreas {
+		dev.drawDevice.FillPath(path, fillRule, matrix, color)
+	}
 	dev.content.Paths = append(dev.content.Paths, path)
 }
 
 func (dev *ContentDevice) StrokePath(path *gfx.Path, stroke *Stroke, matrix gfx.Matrix, color color.Color) {
+	if dev.ocrEnabled && dev.ocrOpts.NonImageAreas {
+		dev.drawDevice.StrokePath(path, stroke, matrix, color)
+	}
 	dev.content.Strokes = append(dev.content.Strokes, path)
 }
 
 func (dev *ContentDevice) FillImage(img *Image, matrix gfx.Matrix, alpha float64) {
-	if dev.options.ocrEnabled && img.Rect.Width() > dev.options.ocropts.MinImageSize.X && img.Rect.Height() > dev.options.ocropts.MinImageSize.Y {
+	if dev.ocrEnabled && img.Rect.Width() > dev.ocrOpts.MinImageSize.X && img.Rect.Height() > dev.ocrOpts.MinImageSize.Y {
 		width, height := img.Bounds().Dx(), img.Bounds().Dy()
 		mat := matrix.Inverted().PostScaled(float64(width), float64(height)).Inverted()
 		dev.ocr.SetImageFromFileData(img.PngBytes())
 
 		words, _ := dev.ocr.GetWords()
 		for _, word := range words {
-			if word.Confidence < dev.options.ocropts.MinConfidence || word.Quad.Width() < dev.options.ocropts.MinLetterWidth {
+			if word.Confidence < dev.ocrOpts.MinConfidence || word.Quad.Width() < dev.ocrOpts.MinLetterWidth {
 				continue
 			}
 			word.Quad = mat.TransformQuad(word.Quad)
@@ -89,8 +117,14 @@ func (dev *ContentDevice) FillImage(img *Image, matrix gfx.Matrix, alpha float64
 }
 
 func (dev *ContentDevice) Close() {
+
+	if dev.ocrEnabled && dev.ocrOpts.NonImageAreas {
+		dev.words = append(dev.words, dev.doNonImageOCR()...)
+	}
+
 	extractor := dla.NewNearestNeighborWordExtractor()
 	words := append(extractor.GetWords(dla.RemoveOverlappingLetters(dev.letters)), dev.words...)
+
 	docstrum := dla.NewDocstrumBoundingBoxPageSegmenter()
 	blocks := docstrum.GetBlocks(words)
 	dev.content.Blocks = append(dev.content.Blocks, blocks...)
@@ -99,6 +133,23 @@ func (dev *ContentDevice) Close() {
 		dev.ocr.Close()
 		dev.ocr = nil
 	}
+}
+
+func (dev *ContentDevice) doNonImageOCR() gfx.TextWords {
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, dev.img); err != nil {
+		log.Printf("%v", err)
+		return nil
+	}
+
+	dev.ocr.SetImageFromFileData(buf.Bytes())
+	words, err := dev.ocr.GetWords()
+	if err != nil {
+		log.Printf("%v", err)
+		return nil
+	}
+
+	return words
 }
 
 type contentopts struct {
@@ -115,6 +166,8 @@ type ocroptions struct {
 	MinImageSize   gfx.Point
 	MinConfidence  float64
 	MinLetterWidth float64
+	NonImageAreas  bool
+	PageBounds     gfx.Rect
 }
 
 type OCROptionBuilder struct{ options ocroptions }
@@ -129,6 +182,11 @@ func (b *OCROptionBuilder) WithMinConfidence(conf float64) *OCROptionBuilder {
 }
 func (b *OCROptionBuilder) WithMinLetterWidth(width float64) *OCROptionBuilder {
 	b.options.MinLetterWidth = width
+	return b
+}
+func (b *OCROptionBuilder) WithNonImageAreas(bounds gfx.Rect) *OCROptionBuilder {
+	b.options.NonImageAreas = true
+	b.options.PageBounds = bounds
 	return b
 }
 

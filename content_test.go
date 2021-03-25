@@ -36,7 +36,7 @@ func TestContent(t *testing.T) {
 			fitz.WithOCR().
 				WithMinConfidence(35).
 				WithMinLetterWidth(5).
-				WithMinImageSize(p.Bounds().Width()/2, p.Bounds().Height()/2),
+				WithNonImageAreas(p.Bounds()),
 		))
 
 		ctx := draw2dimg.NewGraphicContext(img)

@@ -6,6 +6,8 @@ import (
 	"image/color"
 	"unsafe"
 
+	"github.com/llgcode/draw2d"
+	"github.com/llgcode/draw2d/draw2dimg"
 	"go.matteson.dev/gfx"
 )
 
@@ -211,4 +213,43 @@ func getFontInfo(ctx *C.fz_context, span *C.fz_text_span) (font *Font) {
 		RegisterFont(font)
 	}
 	return
+}
+
+func drawPath(ctx *draw2dimg.GraphicContext, path *gfx.Path) {
+	var j = 0
+	for _, cmd := range path.Components {
+		switch cmd {
+		case gfx.MoveToComp:
+			ctx.MoveTo(path.Points[j].X, path.Points[j].Y)
+		case gfx.LineToComp:
+			ctx.LineTo(path.Points[j].X, path.Points[j].Y)
+		case gfx.QuadCurveToComp:
+			ctx.QuadCurveTo(path.Points[j].X, path.Points[j].Y, path.Points[j+1].X, path.Points[j+1].Y)
+		case gfx.CubicCurveToComp:
+			ctx.CubicCurveTo(path.Points[j].X, path.Points[j].Y, path.Points[j+1].X, path.Points[j+1].Y, path.Points[j+2].X, path.Points[j+2].Y)
+		case gfx.ClosePathComp:
+			ctx.Close()
+		}
+		j += cmd.PointCount()
+	}
+}
+
+func toDrawMatrix(mat gfx.Matrix) draw2d.Matrix {
+	return draw2d.Matrix{mat.A, mat.B, mat.C, mat.D, mat.E, mat.F}
+}
+
+func drawRect(ctx *draw2dimg.GraphicContext, rect gfx.Rect) {
+	ctx.MoveTo(rect.X.Min, rect.Y.Min)
+	ctx.LineTo(rect.X.Min, rect.Y.Max)
+	ctx.LineTo(rect.X.Max, rect.Y.Max)
+	ctx.LineTo(rect.X.Max, rect.Y.Min)
+	ctx.Close()
+}
+
+func drawQuad(ctx *draw2dimg.GraphicContext, quad gfx.Quad) {
+	ctx.MoveTo(quad.BottomLeft.X, quad.BottomLeft.Y)
+	ctx.LineTo(quad.TopLeft.X, quad.TopLeft.Y)
+	ctx.LineTo(quad.TopRight.X, quad.TopRight.Y)
+	ctx.LineTo(quad.BottomRight.X, quad.BottomRight.Y)
+	ctx.Close()
 }
