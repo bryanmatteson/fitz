@@ -26,6 +26,8 @@ go.matteson.dev/gfx v0.0.0-20210325025353-ca1bbcbd963e h1:/K1/Yk88fCWPXgzhKULrB2
 go.matteson.dev/gfx v0.0.0-20210325025353-ca1bbcbd963e/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
 go.matteson.dev/gfx v0.0.0-20210325032241-de86fb2e22d3 h1:L5oOCcV4jYxGgYXuJPMz0PPmGALyRXWIm7+97Uj1BRY=
 go.matteson.dev/gfx v0.0.0-20210325032241-de86fb2e22d3/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
+go.matteson.dev/gfx v0.0.0-20210325035313-0ba0befa73a3 h1:ng5Cd4fCLHyPYK7Z56s9wPsiR72CwzfMZPcVrnekbNg=
+go.matteson.dev/gfx v0.0.0-20210325035313-0ba0befa73a3/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
 go.matteson.dev/tess v0.0.0-20210324223135-d4b6ad5a3ab0 h1:2f8tl1q9mplYukP3OnoPRBdeSYy0NwIf3x9+u3vKjrg=
 go.matteson.dev/tess v0.0.0-20210324223135-d4b6ad5a3ab0/go.mod h1:MAgmdUWAKD6s6QgR+RzhpEKOm0jEyxDWDnmnE3y/Vrw=
 golang.org/x/image v0.0.0-20180708004352-c73c2afc3b81/go.mod h1:ux5Hcp/YLpHSI86hEcLt0YII63i6oz57MZXIpbrjZUs=
