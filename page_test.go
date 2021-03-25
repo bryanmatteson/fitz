@@ -10,7 +10,7 @@ import (
 )
 
 func TestPageRender(t *testing.T) {
-	doc, err := fitz.NewDocument("/Users/bryan/Desktop/scratch/stj.pdf")
+	doc, err := fitz.NewDocument("/Volumes/SamT5/backup/misc/reports/BIO/bio_quick_view_report/1487927b-ca2e-4121-b0ea-918731053f28.pdf")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,8 +19,7 @@ func TestPageRender(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	img, err := pg.RenderImage(gfx.MakeRectWH(50, 50, 160, 30), 4)
-	// img, err := pg.RenderImage(fitz.EmptyRect(), 1)
+	img, err := pg.RenderImage(gfx.MakeRectWH(360, 17, 166, 44), 4)
 	if err != nil {
 		t.Fatal(err)
 	}

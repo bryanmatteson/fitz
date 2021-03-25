@@ -49,10 +49,15 @@ func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err
 		bounds = C.fz_make_rect(C.float(region.X.Min), C.float(region.Y.Min), C.float(region.X.Max), C.float(region.Y.Max))
 	}
 
+	ctm = C.fz_concat(C.fz_translate(-bounds.x0, -bounds.y0), ctm)
 	bounds = C.fz_transform_rect(bounds, ctm)
 	bbox := C.fz_round_rect(bounds)
 
-	pixmap := C.fz_new_pixmap_with_bbox(p.ctx, C.fz_device_rgb(p.ctx), bbox, nil, 1)
+	width := bbox.x1 - bbox.x0
+	height := bbox.y1 - bbox.y0
+	pixBbox := C.fz_make_irect(0, 0, width, height)
+
+	pixmap := C.fz_new_pixmap_with_bbox(p.ctx, C.fz_device_rgb(p.ctx), pixBbox, nil, 1)
 	if pixmap == nil {
 		return nil, ErrCreatePixmap
 	}
@@ -60,7 +65,7 @@ func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err
 	C.fz_clear_pixmap_with_value(p.ctx, pixmap, C.int(0xff))
 	defer C.fz_drop_pixmap(p.ctx, pixmap)
 
-	device := C.fz_new_draw_device_with_bbox(p.ctx, ctm, pixmap, &bbox)
+	device := C.fz_new_draw_device_with_bbox(p.ctx, ctm, pixmap, &pixBbox)
 	defer C.fz_drop_device(p.ctx, device)
 
 	C.fz_enable_device_hints(p.ctx, device, C.FZ_NO_CACHE)
@@ -73,8 +78,6 @@ func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err
 		return nil, ErrPixmapSamples
 	}
 
-	width := bbox.x1 - bbox.x0
-	height := bbox.y1 - bbox.y0
 	img.Pix = C.GoBytes(unsafe.Pointer(pixels), C.int(4*width*height))
 	img.Rect = image.Rect(0, 0, int(width), int(height))
 	img.Stride = 4 * img.Rect.Max.X
