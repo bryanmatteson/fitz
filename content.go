@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/disintegration/imaging"
-	"go.matteson.dev/fitz/internal/dla"
+	"go.matteson.dev/dla"
 	"go.matteson.dev/gfx"
 	"go.matteson.dev/tess"
 )

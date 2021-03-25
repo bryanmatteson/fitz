@@ -1,14 +1,17 @@
 package fitz_test
 
 import (
+	"bytes"
 	"fmt"
+	"image"
+	"image/color"
 	"image/png"
+	"io/ioutil"
 	"os"
 	"testing"
 
 	"github.com/llgcode/draw2d"
 	"github.com/llgcode/draw2d/draw2dimg"
-	"github.com/lucasb-eyer/go-colorful"
 	"go.matteson.dev/fitz"
 	"go.matteson.dev/gfx"
 )
@@ -19,9 +22,13 @@ func TestContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	doc.ParallelPageProcess(func(p *fitz.Page, err error) {
+	doc.SequentialPageProcess(func(p *fitz.Page, err error) {
 		if err != nil {
 			t.Fatal(err)
+		}
+
+		if p.Number() > 1 {
+			return
 		}
 
 		img, err := p.RenderImage(p.Bounds(), 5)
@@ -32,36 +39,43 @@ func TestContent(t *testing.T) {
 		var displayList fitz.DisplayList
 		p.RunDevice(fitz.NewListDevice(&displayList))
 
-		var content fitz.PageContent
-		displayList.Apply(fitz.NewContentDevice(&content,
-			fitz.WithOCR().
-				WithMinConfidence(35).
-				WithMinLetterWidth(5).
-				WithNonImageAreas(p.Bounds(), gfx.MakeRectWH(p.Bounds().Width()/2, 0, p.Bounds().Width()/2, 100)),
-		))
-
 		ctx := draw2dimg.NewGraphicContext(img)
 		ctx.SetMatrixTransform(draw2d.NewScaleMatrix(5, 5))
 
-		for _, block := range content.Blocks {
-			ctx.MoveTo(block.Quad.BottomLeft.X, block.Quad.BottomLeft.Y)
-			ctx.LineTo(block.Quad.TopLeft.X, block.Quad.TopLeft.Y)
-			ctx.LineTo(block.Quad.TopRight.X, block.Quad.TopRight.Y)
-			ctx.LineTo(block.Quad.BottomRight.X, block.Quad.BottomRight.Y)
-			ctx.Close()
-			ctx.SetStrokeColor(colorful.FastHappyColor())
-			ctx.SetLineWidth(1.0)
-			ctx.Stroke()
-		}
+		drawRect(ctx, gfx.MakeRectWH(100, 0, p.Bounds().Width()-100, 100))
+		ctx.SetFillColor(color.RGBA{R: 0, G: 255, B: 0, A: 255})
+		ctx.Fill()
 
-		file, err := os.Create(fmt.Sprintf("/Users/bryan/Desktop/output%d.png", p.Number()))
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer file.Close()
+		var buf bytes.Buffer
+		png.Encode(&buf, img)
 
-		if err = png.Encode(file, img); err != nil {
-			t.Fatal(err)
-		}
+		ioutil.WriteFile(fmt.Sprintf("/Users/bryan/Desktop/test%d.png", p.Number()), buf.Bytes(), os.ModePerm)
 	})
+}
+
+func TestRects(t *testing.T) {
+	img := image.NewRGBA(image.Rect(0, 0, 500, 100))
+	ctx := draw2dimg.NewGraphicContext(img)
+	drawRect(ctx, gfx.MakeRectWH(0, 0, 500, 100))
+	ctx.SetFillColor(color.Black)
+	ctx.Fill()
+
+	trm := gfx.NewTranslationMatrix(50, 50).Inverted()
+	ctx.SetMatrixTransform(draw2d.Matrix{trm.A, trm.B, trm.C, trm.D, trm.E, trm.F})
+
+	drawRect(ctx, gfx.MakeRectWH(50, 50, 100, 50))
+	ctx.SetFillColor(color.White)
+	ctx.Fill()
+
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
+	ioutil.WriteFile("/Users/bryan/Desktop/out.png", buf.Bytes(), os.ModePerm)
+}
+
+func drawRect(ctx *draw2dimg.GraphicContext, rect gfx.Rect) {
+	ctx.MoveTo(rect.X.Min, rect.Y.Min)
+	ctx.LineTo(rect.X.Min, rect.Y.Max)
+	ctx.LineTo(rect.X.Max, rect.Y.Max)
+	ctx.LineTo(rect.X.Max, rect.Y.Min)
+	ctx.Close()
 }

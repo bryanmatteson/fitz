@@ -15,6 +15,9 @@ github.com/lucasb-eyer/go-colorful v1.2.0 h1:1nnpGOrhyZZuNyfu1QjKiUICQ74+3FNCN69
 github.com/lucasb-eyer/go-colorful v1.2.0/go.mod h1:R4dSotOR9KMtayYi1e77YzuveK+i7ruzyGqttikkLy0=
 github.com/mattn/go-pointer v0.0.1 h1:n+XhsuGeVO6MEAp7xyEukFINEa+Quek5psIR/ylA6o0=
 github.com/mattn/go-pointer v0.0.1/go.mod h1:2zXcozF6qYGgmsG+SeTZz3oAbFLdD3OWqnUbNvJZAlc=
+go.matteson.dev/dla v0.0.0-20210325182859-e0b68e9f49f3 h1:qdB6UJZvuUylR0ItfQDUCyKvr2G5Rjsuk9URg/kNxO0=
+go.matteson.dev/dla v0.0.0-20210325182859-e0b68e9f49f3/go.mod h1:eeOwW2TeN7q/bBGucSfzJfwg5PnmJAojaD3mCvbv1jM=
+go.matteson.dev/fitz v0.0.0-20210325035828-2590cc587dc6/go.mod h1:6HZfwasCQcokNYkwpU4cPL0tRaXLq6QOfueBHIXbw8U=
 go.matteson.dev/gfx v0.0.0-20210324213541-9a4109e1c40c/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
 go.matteson.dev/gfx v0.0.0-20210324215819-d43fd5839da6 h1:bz62/j3knDIG7ypYrazrQwiXrSGX3ohDJIIQAEsPGek=
 go.matteson.dev/gfx v0.0.0-20210324215819-d43fd5839da6/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
