@@ -10,6 +10,7 @@ import (
 	"github.com/llgcode/draw2d/draw2dimg"
 	"github.com/lucasb-eyer/go-colorful"
 	"go.matteson.dev/fitz"
+	"go.matteson.dev/gfx"
 )
 
 func TestContent(t *testing.T) {
@@ -18,7 +19,7 @@ func TestContent(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	doc.SequentialPageProcess(func(p *fitz.Page, err error) {
+	doc.ParallelPageProcess(func(p *fitz.Page, err error) {
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -36,7 +37,7 @@ func TestContent(t *testing.T) {
 			fitz.WithOCR().
 				WithMinConfidence(35).
 				WithMinLetterWidth(5).
-				WithNonImageAreas(p.Bounds()),
+				WithNonImageAreas(p.Bounds(), gfx.MakeRectWH(0, 0, p.Bounds().Width(), 100)),
 		))
 
 		ctx := draw2dimg.NewGraphicContext(img)

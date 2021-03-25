@@ -137,35 +137,37 @@ func (dev *ContentDevice) Close() {
 }
 
 func (dev *ContentDevice) doNonImageOCR() gfx.TextWords {
-	width, height := dev.img.Rect.Dx()*4, dev.img.Rect.Dy()*4
-	resized := imaging.Resize(dev.img, width, height, imaging.Lanczos)
-
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, resized); err != nil {
-		log.Printf("%v", err)
-		return nil
-	}
-
-	dev.ocr.SetImageFromFileData(buf.Bytes())
-	ocrWords, err := dev.ocr.GetWords()
-	if err != nil {
-		log.Printf("%v", err)
-		return nil
-	}
-
+	words := make(gfx.TextWords, 0)
 	inv := gfx.NewScaleMatrix(4, 4).Inverted()
 
-	words := make(gfx.TextWords, 0, len(ocrWords))
-	for _, word := range ocrWords {
-		if word.Confidence < dev.ocrOpts.MinConfidence || word.Quad.Width() < dev.ocrOpts.MinLetterWidth {
-			continue
+	for _, area := range dev.ocrOpts.AdditionalAreas {
+		subArea := image.Rect(int(area.X.Min), int(area.Y.Min), int(area.X.Max), int(area.Y.Max))
+		subimg := dev.img.SubImage(subArea)
+		resized := imaging.Resize(subimg, subArea.Dx()*4, subArea.Dy()*4, imaging.Lanczos)
+		var buf bytes.Buffer
+		if err := png.Encode(&buf, resized); err != nil {
+			log.Printf("%v", err)
+			return nil
 		}
 
-		w := word
-		w.Quad = inv.TransformQuad(w.Quad)
-		w.StartBaseline = inv.TransformPoint(w.StartBaseline)
-		w.EndBaseline = inv.TransformPoint(w.EndBaseline)
-		words = append(words, w)
+		dev.ocr.SetImageFromFileData(buf.Bytes())
+		ocrWords, err := dev.ocr.GetWords()
+		if err != nil {
+			log.Printf("%v", err)
+			return nil
+		}
+
+		for _, word := range ocrWords {
+			if word.Confidence < dev.ocrOpts.MinConfidence || word.Quad.Width() < dev.ocrOpts.MinLetterWidth {
+				continue
+			}
+
+			w := word
+			w.Quad = inv.TransformQuad(w.Quad)
+			w.StartBaseline = inv.TransformPoint(w.StartBaseline)
+			w.EndBaseline = inv.TransformPoint(w.EndBaseline)
+			words = append(words, w)
+		}
 	}
 
 	return words
@@ -182,11 +184,12 @@ type ContentOptionFunc func(*contentopts)
 func (fn ContentOptionFunc) Apply(o *contentopts) { fn(o) }
 
 type ocroptions struct {
-	MinImageSize   gfx.Point
-	MinConfidence  float64
-	MinLetterWidth float64
-	NonImageAreas  bool
-	PageBounds     gfx.Rect
+	MinImageSize    gfx.Point
+	MinConfidence   float64
+	MinLetterWidth  float64
+	NonImageAreas   bool
+	PageBounds      gfx.Rect
+	AdditionalAreas []gfx.Rect
 }
 
 type OCROptionBuilder struct{ options ocroptions }
@@ -203,9 +206,10 @@ func (b *OCROptionBuilder) WithMinLetterWidth(width float64) *OCROptionBuilder {
 	b.options.MinLetterWidth = width
 	return b
 }
-func (b *OCROptionBuilder) WithNonImageAreas(bounds gfx.Rect) *OCROptionBuilder {
+func (b *OCROptionBuilder) WithNonImageAreas(page gfx.Rect, areas ...gfx.Rect) *OCROptionBuilder {
 	b.options.NonImageAreas = true
-	b.options.PageBounds = bounds
+	b.options.PageBounds = page
+	b.options.AdditionalAreas = append(b.options.AdditionalAreas, areas...)
 	return b
 }
 
