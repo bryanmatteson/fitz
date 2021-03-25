@@ -37,7 +37,7 @@ func TestContent(t *testing.T) {
 			fitz.WithOCR().
 				WithMinConfidence(35).
 				WithMinLetterWidth(5).
-				WithNonImageAreas(p.Bounds(), gfx.MakeRectWH(0, 0, p.Bounds().Width(), 100)),
+				WithNonImageAreas(p.Bounds(), gfx.MakeRectWH(p.Bounds().Width()/2, 0, p.Bounds().Width()/2, 100)),
 		))
 
 		ctx := draw2dimg.NewGraphicContext(img)
