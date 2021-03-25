@@ -18,9 +18,6 @@ type DrawDevice struct {
 
 func NewDrawDevice(transform gfx.Matrix, dest *image.RGBA) GoDevice {
 	ctx := draw2dimg.NewGraphicContext(dest)
-	ctx.SetFillColor(color.White)
-	drawRect(ctx, gfx.MakeRectCorners(float64(dest.Rect.Min.X), float64(dest.Rect.Min.Y), float64(dest.Rect.Max.X), float64(dest.Rect.Max.Y)))
-	ctx.Fill()
 	return &DrawDevice{image: dest, context: ctx, transform: transform}
 }
 
