@@ -17,7 +17,11 @@ type DrawDevice struct {
 }
 
 func NewDrawDevice(transform gfx.Matrix, dest *image.RGBA) GoDevice {
-	return &DrawDevice{image: dest, context: draw2dimg.NewGraphicContext(dest), transform: transform}
+	ctx := draw2dimg.NewGraphicContext(dest)
+	ctx.SetFillColor(color.White)
+	drawRect(ctx, gfx.MakeRectCorners(float64(dest.Rect.Min.X), float64(dest.Rect.Min.Y), float64(dest.Rect.Max.X), float64(dest.Rect.Max.Y)))
+	ctx.Fill()
+	return &DrawDevice{image: dest, context: ctx, transform: transform}
 }
 
 func (dev *DrawDevice) FillPath(path *gfx.Path, fillRule FillRule, ctm gfx.Matrix, fillColor color.Color) {
@@ -45,7 +49,6 @@ func (dev *DrawDevice) FillShade(shade *Shader, ctm gfx.Matrix, alpha float64) {
 
 func (dev *DrawDevice) FillImage(image *Image, ctm gfx.Matrix, alpha float64) {
 	trm := ctm.Concat(dev.transform)
-	dev.context.Save()
 
 	// ctm is a transform from the image (expressed as a unit rect) to the destination device
 	// we need to reverse and scale it to get a mapping from the destination to the source pixels,

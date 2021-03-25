@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"log"
 
+	"github.com/disintegration/imaging"
 	"go.matteson.dev/fitz/internal/dla"
 	"go.matteson.dev/gfx"
 	"go.matteson.dev/tess"
@@ -47,7 +48,7 @@ func NewContentDevice(content *PageContent, opts ...ContentOption) GoDevice {
 	if options.ocropts.NonImageAreas {
 		bounds := options.ocropts.PageBounds
 		img = image.NewRGBA(image.Rect(int(bounds.X.Min), int(bounds.Y.Min), int(bounds.X.Max), int(bounds.Y.Max)))
-		drawdev = NewDrawDevice(gfx.IdentityMatrix, img)
+		drawdev = NewDrawDevice(gfx.NewScaleMatrix(1, 1), img)
 	}
 
 	return &ContentDevice{
@@ -117,8 +118,8 @@ func (dev *ContentDevice) FillImage(img *Image, matrix gfx.Matrix, alpha float64
 }
 
 func (dev *ContentDevice) Close() {
-
 	if dev.ocrEnabled && dev.ocrOpts.NonImageAreas {
+		dev.drawDevice.Close()
 		dev.words = append(dev.words, dev.doNonImageOCR()...)
 	}
 
@@ -136,17 +137,35 @@ func (dev *ContentDevice) Close() {
 }
 
 func (dev *ContentDevice) doNonImageOCR() gfx.TextWords {
+	width, height := dev.img.Rect.Dx()*4, dev.img.Rect.Dy()*4
+	resized := imaging.Resize(dev.img, width, height, imaging.Lanczos)
+
 	var buf bytes.Buffer
-	if err := png.Encode(&buf, dev.img); err != nil {
+	if err := png.Encode(&buf, resized); err != nil {
 		log.Printf("%v", err)
 		return nil
 	}
 
 	dev.ocr.SetImageFromFileData(buf.Bytes())
-	words, err := dev.ocr.GetWords()
+	ocrWords, err := dev.ocr.GetWords()
 	if err != nil {
 		log.Printf("%v", err)
 		return nil
+	}
+
+	inv := gfx.NewScaleMatrix(4, 4).Inverted()
+
+	words := make(gfx.TextWords, 0, len(ocrWords))
+	for _, word := range ocrWords {
+		if word.Confidence < dev.ocrOpts.MinConfidence || word.Quad.Width() < dev.ocrOpts.MinLetterWidth {
+			continue
+		}
+
+		w := word
+		w.Quad = inv.TransformQuad(w.Quad)
+		w.StartBaseline = inv.TransformPoint(w.StartBaseline)
+		w.EndBaseline = inv.TransformPoint(w.EndBaseline)
+		words = append(words, w)
 	}
 
 	return words
