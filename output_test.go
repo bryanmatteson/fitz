@@ -19,5 +19,5 @@ func TestOutput(t *testing.T) {
 	}
 	defer file.Close()
 
-	doc.Write(file)
+	doc.Write(file, fitz.DefaultWriteOptions())
 }

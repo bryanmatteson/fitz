@@ -20,11 +20,13 @@ type Page struct {
 }
 
 func newPage(ctx *C.fz_context, number int, bounds C.fz_rect, list *C.fz_display_list) *Page {
+	ctx = C.fz_clone_context(ctx)
 	return &Page{ctx: ctx, number: number, bounds: bounds, list: list}
 }
 
 func (p *Page) drop() {
 	C.fz_drop_display_list(p.ctx, p.list)
+	C.fz_drop_context(p.ctx)
 	p.list = nil
 	p.ctx = nil
 }

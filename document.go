@@ -14,10 +14,6 @@ import (
 	"unsafe"
 )
 
-type PageRange struct {
-	Start, End int
-}
-
 type Document struct {
 	mut    sync.Mutex
 	ctx    *C.fz_context
@@ -126,7 +122,7 @@ func (d *Document) LoadPage(num int) (*Page, error) {
 
 		list := C.fz_new_display_list_from_page(d.ctx, pg)
 		bounds := C.fz_bound_page(d.ctx, pg)
-		d.pages[num] = newPage(C.fz_clone_context(d.ctx), num, bounds, list)
+		d.pages[num] = newPage(d.ctx, num, bounds, list)
 	}
 
 	return d.pages[num], nil
@@ -165,14 +161,14 @@ func (d *Document) Close() {
 	C.fz_drop_context(d.ctx)
 }
 
-func (d *Document) Save(filePath string) error {
+func (d *Document) Save(filePath string, opts WriteOptions) error {
 	file, err := os.Create(filePath)
 	if err != nil {
 		return err
 	}
 	file.Close()
 
-	options := C.pdf_write_options{}
+	options := opts.fzoptions()
 	output := C.CString(filePath)
 	defer C.free(unsafe.Pointer(output))
 
@@ -180,8 +176,8 @@ func (d *Document) Save(filePath string) error {
 	return nil
 }
 
-func (d *Document) Write(w io.Writer) error {
-	options := C.pdf_write_options{}
+func (d *Document) Write(w io.Writer, opts WriteOptions) error {
+	options := opts.fzoptions()
 	output := newOutputForWriter(d.ctx, 8192, w)
 	defer C.fz_drop_output(d.ctx, output)
 
@@ -192,7 +188,7 @@ func (d *Document) Write(w io.Writer) error {
 }
 
 func (d *Document) NewDocumentFromPages(pages ...int) (*Document, error) {
-	destCtx := C.fz_clone_context(d.ctx)
+	destCtx := C.fzgo_new_context()
 	dest := C.pdf_create_document(destCtx)
 
 	graftMap := C.pdf_new_graft_map(destCtx, dest)
@@ -291,4 +287,49 @@ func newDocumentFromFile(fileName string) (d *Document, err error) {
 	}
 
 	return newDocument(ctx, native), nil
+}
+
+type WriteOptions struct {
+	CompressImages         bool
+	CompressFonts          bool
+	CompressStreams        bool
+	DecompressStreams      bool
+	CleanStreams           bool
+	SanitizeStreams        bool
+	Linearize              bool
+	GarbageCollectionLevel int
+}
+
+func DefaultWriteOptions() WriteOptions { return WriteOptions{} }
+
+func (o *WriteOptions) fzoptions() C.pdf_write_options {
+	opts := C.pdf_write_options{}
+	if o == nil {
+		return opts
+	}
+
+	if o.CompressImages {
+		opts.do_compress_images = 1
+	}
+	if o.CompressFonts {
+		opts.do_compress_fonts = 1
+	}
+	if o.CompressStreams {
+		opts.do_compress = 1
+	}
+	if o.DecompressStreams {
+		opts.do_decompress = 1
+	}
+	if o.CleanStreams {
+		opts.do_clean = 1
+	}
+	if o.SanitizeStreams {
+		opts.do_sanitize = 1
+	}
+	if o.Linearize {
+		opts.do_linear = 1
+	}
+
+	opts.do_garbage = C.int(o.GarbageCollectionLevel)
+	return opts
 }
