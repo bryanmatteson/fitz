@@ -64,6 +64,8 @@ func getStroke(stroke *C.fz_stroke_state) *Stroke {
 
 func getImage(ctx *C.fz_context, ctm C.fz_matrix, img *C.fz_image, colorParams C.fz_color_params) *Image {
 	pix := C.fz_get_pixmap_from_image(ctx, img, nil, nil, nil, nil)
+	defer C.fz_drop_pixmap(ctx, pix)
+
 	cs := C.fz_pixmap_colorspace(ctx, pix)
 
 	switch C.fz_colorspace_type(ctx, cs) {
@@ -71,6 +73,7 @@ func getImage(ctx *C.fz_context, ctm C.fz_matrix, img *C.fz_image, colorParams C
 		break
 	default:
 		pix = C.fz_convert_pixmap(ctx, pix, C.fz_device_rgb(ctx), nil, nil, colorParams, 1)
+		defer C.fz_drop_pixmap(ctx, pix)
 	}
 
 	comp := int(C.fz_pixmap_components(ctx, pix))

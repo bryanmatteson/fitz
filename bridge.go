@@ -316,6 +316,11 @@ func fzgo_close_device(ctx *C.fz_context, dev *C.fz_device) {
 	device.Close()
 }
 
+//export fzgo_drop_device
+func fzgo_drop_device(ctx *C.fz_context, dev *C.fz_device) {
+	// pointer.Unref(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data)
+}
+
 //export gopath_moveto
 func gopath_moveto(ctx *C.fz_context, arg *C.void, x C.float, y C.float) {
 	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)

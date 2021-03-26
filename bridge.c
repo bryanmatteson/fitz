@@ -34,6 +34,7 @@ extern void fzgo_end_tile(fz_context* ctx, fz_device* dev);
 extern void fzgo_begin_layer(fz_context* ctx, fz_device* dev, const char* layer_name);
 extern void fzgo_end_layer(fz_context* ctx, fz_device* dev);
 extern void fzgo_close_device(fz_context* ctx, fz_device* dev);
+extern void fzgo_drop_device(fz_context* ctx, fz_device* dev);
 
 extern void gopath_moveto(fz_context* ctx, void* arg, float x, float y);
 extern void gopath_lineto(fz_context* ctx, void* arg, float x, float y);
@@ -104,6 +105,7 @@ fz_device* fz_new_go_device(fz_context* ctx, void* user_data) {
     dev->super.begin_layer = fzgo_begin_layer;
     dev->super.end_layer = fzgo_end_layer;
     dev->super.close_device = fzgo_close_device;
+    dev->super.drop_device = fzgo_drop_device;
 
     dev->user_data = user_data;
 

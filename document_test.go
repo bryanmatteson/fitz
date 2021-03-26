@@ -46,7 +46,11 @@ func TestDocumentMemory(t *testing.T) {
 			t.Fatal(err)
 		}
 		for i := 0; i < doc.NumPages(); i++ {
-			doc.LoadPage(i)
+			pg, _ := doc.LoadPage(i)
+			pg.RenderImage(pg.Bounds(), 5)
+			pg.GetText()
+			var displayList fitz.DisplayList
+			pg.RunDevice(fitz.NewListDevice(&displayList))
 		}
 		doc.Close()
 
