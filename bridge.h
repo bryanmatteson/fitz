@@ -13,11 +13,13 @@ typedef const fz_text cfz_text_t;
 typedef const char cchar_t;
 typedef const fz_stroke_state cfz_stroke_state_t;
 typedef const fz_path_walker cfz_path_walker;
+typedef const void* cvoidptr_t;
 
 fz_context* fzgo_new_context();
 fz_device* fz_new_go_device(fz_context* ctx, void* user_data);
 pdf_obj* pdfname(int typ);
 int fz_text_span_wmode(fz_text_span* span);
+fz_output* fzgo_new_output_writer(fz_context* ctx, int bufsize, void* iowriter);
 
 typedef struct fzgo_device {
     fz_device super;

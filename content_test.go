@@ -3,7 +3,6 @@ package fitz_test
 import (
 	"bytes"
 	"fmt"
-	"image"
 	"image/color"
 	"image/png"
 	"io/ioutil"
@@ -39,37 +38,23 @@ func TestContent(t *testing.T) {
 		var displayList fitz.DisplayList
 		p.RunDevice(fitz.NewListDevice(&displayList))
 
+		var content fitz.PageContent
+		displayList.Apply(fitz.NewContentDevice(&content))
+
 		ctx := draw2dimg.NewGraphicContext(img)
 		ctx.SetMatrixTransform(draw2d.NewScaleMatrix(5, 5))
 
-		drawRect(ctx, gfx.MakeRectWH(100, 0, p.Bounds().Width()-100, 100))
-		ctx.SetFillColor(color.RGBA{R: 0, G: 255, B: 0, A: 255})
-		ctx.Fill()
+		for _, stroke := range content.Paths {
+			drawRect(ctx, stroke.Bounds())
+			ctx.SetStrokeColor(color.RGBA{R: 255, G: 0, B: 0, A: 255})
+			ctx.Stroke()
+		}
 
 		var buf bytes.Buffer
 		png.Encode(&buf, img)
 
 		ioutil.WriteFile(fmt.Sprintf("/Users/bryan/Desktop/test%d.png", p.Number()), buf.Bytes(), os.ModePerm)
 	})
-}
-
-func TestRects(t *testing.T) {
-	img := image.NewRGBA(image.Rect(0, 0, 500, 100))
-	ctx := draw2dimg.NewGraphicContext(img)
-	drawRect(ctx, gfx.MakeRectWH(0, 0, 500, 100))
-	ctx.SetFillColor(color.Black)
-	ctx.Fill()
-
-	trm := gfx.NewTranslationMatrix(50, 50).Inverted()
-	ctx.SetMatrixTransform(draw2d.Matrix{trm.A, trm.B, trm.C, trm.D, trm.E, trm.F})
-
-	drawRect(ctx, gfx.MakeRectWH(50, 50, 100, 50))
-	ctx.SetFillColor(color.White)
-	ctx.Fill()
-
-	var buf bytes.Buffer
-	png.Encode(&buf, img)
-	ioutil.WriteFile("/Users/bryan/Desktop/out.png", buf.Bytes(), os.ModePerm)
 }
 
 func drawRect(ctx *draw2dimg.GraphicContext, rect gfx.Rect) {

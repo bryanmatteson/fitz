@@ -23,7 +23,7 @@ type PageContent struct {
 type ContentDevice struct {
 	BaseDevice
 	ocrEnabled bool
-	ocrOpts    *ocroptions
+	ocrOpts    ocroptions
 	content    *PageContent
 	ocr        *tess.Client
 	letters    gfx.Chars
@@ -175,7 +175,7 @@ func (dev *ContentDevice) doNonImageOCR() gfx.TextWords {
 
 type contentopts struct {
 	ocrEnabled bool
-	ocropts    *ocroptions
+	ocropts    ocroptions
 }
 
 type ContentOption interface{ Apply(*contentopts) }
@@ -215,7 +215,7 @@ func (b *OCROptionBuilder) WithNonImageAreas(page gfx.Rect, areas ...gfx.Rect) *
 
 func (b *OCROptionBuilder) Apply(o *contentopts) {
 	o.ocrEnabled = true
-	o.ocropts = &b.options
+	o.ocropts = b.options
 }
 
 func WithOCR() *OCROptionBuilder {

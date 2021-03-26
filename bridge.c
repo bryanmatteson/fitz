@@ -44,6 +44,14 @@ extern void gopath_curvetov(fz_context* ctx, void* arg, float x2, float y2, floa
 extern void gopath_curvetoy(fz_context* ctx, void* arg, float x1, float y1, float x3, float y3);
 extern void gopath_rectto(fz_context* ctx, void* arg, float x1, float y1, float x2, float y2);
 
+extern void gooutput_writer_write(fz_context* ctx, void* state, const void* data, size_t n);
+extern void gooutput_writer_close(fz_context* ctx, void* state);
+extern void gooutput_writer_drop(fz_context* ctx, void* state);
+
+fz_output* fzgo_new_output_writer(fz_context* ctx, int bufsize, void* iowriter) {
+    return fz_new_output(ctx, bufsize, iowriter, gooutput_writer_write, gooutput_writer_close, gooutput_writer_drop);
+}
+
 const char* fz_version = FZ_VERSION;
 
 fz_context* fzgo_new_context() {
