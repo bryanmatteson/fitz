@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"log"
 	"unsafe"
 
 	"github.com/mattn/go-pointer"
@@ -29,21 +28,21 @@ func gooutput_writer_close(ctx *C.fz_context, state *C.void) {
 
 //export gooutput_writer_tell
 func gooutput_writer_tell(ctx *C.fz_context, state *C.void) int64 {
-	output := pointer.Restore(unsafe.Pointer(state)).(io.WriteSeeker)
-	cur, err := output.Seek(0, io.SeekCurrent)
-	if err != nil {
-		log.Printf("%v", err)
-	}
-	return cur
+	// output := pointer.Restore(unsafe.Pointer(state)).(io.WriteSeeker)
+	// cur, err := output.Seek(0, io.SeekCurrent)
+	// if err != nil {
+	// 	log.Printf("%v", err)
+	// }
+	return 0
 }
 
 //export gooutput_writer_seek
 func gooutput_writer_seek(ctx *C.fz_context, state *C.void, offset C.int64_t, whence C.int) {
-	output := pointer.Restore(unsafe.Pointer(state)).(io.WriteSeeker)
-	_, err := output.Seek(int64(offset), int(whence))
-	if err != nil {
-		log.Printf("%v", err)
-	}
+	// output := pointer.Restore(unsafe.Pointer(state)).(io.WriteSeeker)
+	// _, err := output.Seek(int64(offset), int(whence))
+	// if err != nil {
+	// 	log.Printf("%v", err)
+	// }
 }
 
 //export gooutput_writer_drop
@@ -51,7 +50,7 @@ func gooutput_writer_drop(ctx *C.fz_context, state *C.void) {
 	pointer.Unref(unsafe.Pointer(state))
 }
 
-func newOutputForWriter(ctx *C.fz_context, bufferSize int, w io.WriteSeeker) *C.fz_output {
+func newOutputForWriter(ctx *C.fz_context, bufferSize int, w io.Writer) *C.fz_output {
 	ref := pointer.Save(w)
 	return C.fzgo_new_output_writer(ctx, C.int(bufferSize), ref)
 }
