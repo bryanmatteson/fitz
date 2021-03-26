@@ -180,6 +180,17 @@ func (d *Document) Save(filePath string) error {
 	return nil
 }
 
+func (d *Document) Write(w io.WriteSeeker) error {
+	options := C.pdf_write_options{}
+	output := newOutputForWriter(d.ctx, 8192, w)
+	defer C.fz_drop_output(d.ctx, output)
+
+	C.pdf_write_document(d.ctx, d.native, output, &options)
+	C.fz_close_output(d.ctx, output)
+
+	return nil
+}
+
 func (d *Document) NewDocumentFromPages(pages ...int) (*Document, error) {
 	destCtx := C.fz_clone_context(d.ctx)
 	dest := C.pdf_create_document(destCtx)
