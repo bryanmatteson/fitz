@@ -9,7 +9,8 @@
         "pdf.h": "c",
         "document.h": "c",
         "object.h": "c",
-        "fitz.h": "c"
+        "fitz.h": "c",
+        "functional": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

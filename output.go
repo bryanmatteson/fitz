@@ -21,17 +21,20 @@ func gooutput_writer_write(ctx *C.fz_context, state *C.void, data C.cvoidptr_t, 
 //export gooutput_writer_close
 func gooutput_writer_close(ctx *C.fz_context, state *C.void) {
 	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
-	output.Close()
+	output.Destination.Write(output.Bytes())
 }
 
 //export gooutput_writer_tell
 func gooutput_writer_tell(ctx *C.fz_context, state *C.void) int64 {
 	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
-	return int64(output.Position)
+	return int64(output.Position())
 }
 
 //export gooutput_writer_seek
-func gooutput_writer_seek(ctx *C.fz_context, state *C.void, offset C.int64_t, whence C.int) {}
+func gooutput_writer_seek(ctx *C.fz_context, state *C.void, offset C.int64_t, whence C.int) {
+	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
+	output.Seek(int64(offset), int(whence))
+}
 
 //export gooutput_writer_drop
 func gooutput_writer_drop(ctx *C.fz_context, state *C.void) {
@@ -39,20 +42,17 @@ func gooutput_writer_drop(ctx *C.fz_context, state *C.void) {
 }
 
 type outputwriter struct {
-	io.Writer
-	Position int
-}
-
-func (o *outputwriter) Write(p []byte) (n int, err error) {
-	n, err = o.Writer.Write(p)
-	o.Position += n
-	return
+	*WriterSeeker
+	Destination io.Writer
 }
 
 func (o *outputwriter) Close() {}
 
 func newOutputForWriter(ctx *C.fz_context, bufferSize int, w io.Writer) *C.fz_output {
-	writer := &outputwriter{Writer: w}
+	writer := &outputwriter{
+		Destination:  w,
+		WriterSeeker: &WriterSeeker{},
+	}
 	return C.fzgo_new_output_writer(ctx, C.int(bufferSize), pointer.Save(writer))
 }
 
@@ -83,6 +83,10 @@ func (ws *WriterSeeker) Write(p []byte) (n int, err error) {
 
 	ws.pos += n
 	return n, err
+}
+
+func (ws *WriterSeeker) Position() int {
+	return ws.pos
 }
 
 func (ws *WriterSeeker) Seek(offset int64, whence int) (int64, error) {

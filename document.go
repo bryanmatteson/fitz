@@ -188,16 +188,16 @@ func (d *Document) Write(w io.Writer, opts WriteOptions) error {
 }
 
 func (d *Document) NewDocumentFromPages(pages ...int) (*Document, error) {
-	destCtx := C.fzgo_new_context()
-	dest := C.pdf_create_document(destCtx)
+	dest := C.pdf_create_document(d.ctx)
 
-	graftMap := C.pdf_new_graft_map(destCtx, dest)
-	defer C.pdf_drop_graft_map(destCtx, graftMap)
+	graftMap := C.pdf_new_graft_map(d.ctx, dest)
+	defer C.pdf_drop_graft_map(d.ctx, graftMap)
 
 	for _, pg := range pages {
-		C.pdf_graft_mapped_page(destCtx, graftMap, C.int(-1), d.native, C.int(pg))
+		C.pdf_graft_mapped_page(d.ctx, graftMap, C.int(-1), d.native, C.int(pg))
 	}
-	return newDocument(destCtx, dest), nil
+
+	return newDocument(C.fz_clone_context(d.ctx), dest), nil
 }
 
 func newDocument(ctx *C.fz_context, doc *C.pdf_document) *Document {
