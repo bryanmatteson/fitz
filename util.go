@@ -159,6 +159,8 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 				float64(gb.x1), float64(gb.y1),
 			)
 			glyphPath := C.fz_outline_glyph(ctx, span.font, item.gid, mat)
+			defer C.fz_drop_path(ctx, glyphPath)
+
 			quad = gfx.RectToQuad(glyphBounds)
 			quads = append(quads, quad)
 
@@ -173,7 +175,6 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 				EndBaseline:   q,
 				GlyphBounds:   glyphBounds,
 			}
-			C.fz_drop_path(ctx, glyphPath)
 
 			letters = append(letters, letter)
 		}

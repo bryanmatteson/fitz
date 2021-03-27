@@ -90,6 +90,7 @@ func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err
 func (p *Page) RunDevice(device GoDevice) {
 	ref := pointer.Save(device)
 	defer pointer.Unref(ref)
+
 	fzdev := C.fz_new_go_device(p.ctx, ref)
 	defer C.fz_drop_device(p.ctx, fzdev)
 
