@@ -13,46 +13,47 @@ import (
 
 //export gooutput_writer_write
 func gooutput_writer_write(ctx *C.fz_context, state *C.void, data C.cvoidptr_t, length C.size_t) {
-	output := pointer.Restore(unsafe.Pointer(state)).(io.Writer)
+	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
 	buffer := C.GoBytes(unsafe.Pointer(data), C.int(length))
 	output.Write(buffer)
 }
 
 //export gooutput_writer_close
 func gooutput_writer_close(ctx *C.fz_context, state *C.void) {
-	output := pointer.Restore(unsafe.Pointer(state)).(io.Writer)
-	if closer, ok := output.(io.Closer); ok {
-		closer.Close()
-	}
+	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
+	output.Close()
 }
 
 //export gooutput_writer_tell
 func gooutput_writer_tell(ctx *C.fz_context, state *C.void) int64 {
-	// output := pointer.Restore(unsafe.Pointer(state)).(io.WriteSeeker)
-	// cur, err := output.Seek(0, io.SeekCurrent)
-	// if err != nil {
-	// 	log.Printf("%v", err)
-	// }
-	return 0
+	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
+	return int64(output.Position)
 }
 
 //export gooutput_writer_seek
-func gooutput_writer_seek(ctx *C.fz_context, state *C.void, offset C.int64_t, whence C.int) {
-	// output := pointer.Restore(unsafe.Pointer(state)).(io.WriteSeeker)
-	// _, err := output.Seek(int64(offset), int(whence))
-	// if err != nil {
-	// 	log.Printf("%v", err)
-	// }
-}
+func gooutput_writer_seek(ctx *C.fz_context, state *C.void, offset C.int64_t, whence C.int) {}
 
 //export gooutput_writer_drop
 func gooutput_writer_drop(ctx *C.fz_context, state *C.void) {
 	pointer.Unref(unsafe.Pointer(state))
 }
 
+type outputwriter struct {
+	io.Writer
+	Position int
+}
+
+func (o *outputwriter) Write(p []byte) (n int, err error) {
+	n, err = o.Writer.Write(p)
+	o.Position += n
+	return
+}
+
+func (o *outputwriter) Close() {}
+
 func newOutputForWriter(ctx *C.fz_context, bufferSize int, w io.Writer) *C.fz_output {
-	ref := pointer.Save(w)
-	return C.fzgo_new_output_writer(ctx, C.int(bufferSize), ref)
+	writer := &outputwriter{Writer: w}
+	return C.fzgo_new_output_writer(ctx, C.int(bufferSize), pointer.Save(writer))
 }
 
 type WriterSeeker struct {
