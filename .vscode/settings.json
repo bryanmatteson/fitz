@@ -6,6 +6,10 @@
         "algorithm": "c",
         "ranges": "c",
         "path.h": "c",
-        "pdf.h": "c"
-    }
+        "pdf.h": "c",
+        "document.h": "c",
+        "object.h": "c",
+        "fitz.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "Disabled"
 }

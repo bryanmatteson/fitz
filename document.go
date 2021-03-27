@@ -297,6 +297,7 @@ type WriteOptions struct {
 	CleanStreams           bool
 	SanitizeStreams        bool
 	Linearize              bool
+	DontRegenerateID       bool
 	GarbageCollectionLevel int
 }
 
@@ -308,24 +309,34 @@ func (o *WriteOptions) fzoptions() C.pdf_write_options {
 		return opts
 	}
 
+	if o.DontRegenerateID {
+		opts.dont_regenerate_id = 1
+	}
+
 	if o.CompressImages {
 		opts.do_compress_images = 1
 	}
+
 	if o.CompressFonts {
 		opts.do_compress_fonts = 1
 	}
+
 	if o.CompressStreams {
 		opts.do_compress = 1
 	}
+
 	if o.DecompressStreams {
 		opts.do_decompress = 1
 	}
+
 	if o.CleanStreams {
 		opts.do_clean = 1
 	}
+
 	if o.SanitizeStreams {
 		opts.do_sanitize = 1
 	}
+
 	if o.Linearize {
 		opts.do_linear = 1
 	}
