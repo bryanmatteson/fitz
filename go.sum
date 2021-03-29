@@ -160,6 +160,8 @@ go.matteson.dev/gfx v0.0.0-20210324213541-9a4109e1c40c/go.mod h1:pbshyCrjB9dZRhY
 go.matteson.dev/gfx v0.0.0-20210325035313-0ba0befa73a3/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
 go.matteson.dev/gfx v0.0.0-20210325222400-9cb579e8e371 h1:zVosJ2w/S3Ch4FXfU1LUK3KsDBiGBsQ4ZzVr4sf+cU8=
 go.matteson.dev/gfx v0.0.0-20210325222400-9cb579e8e371/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
+go.matteson.dev/gfx v0.0.0-20210329001201-b7a98319790a h1:lUoNx2oZIdfSKzO1AdmPFWXa4PiUf5NOjKbvJlMkq7w=
+go.matteson.dev/gfx v0.0.0-20210329001201-b7a98319790a/go.mod h1:pbshyCrjB9dZRhYHWW5MNIS6nJiDlRdrvbP3c0iLVxE=
 go.matteson.dev/no v0.0.0-20210326005433-15e6a745d00d h1:ShkTpnADWCyFqImwoe4Y0mtM0o7IeUutSNhJQ44VYPU=
 go.matteson.dev/no v0.0.0-20210326005433-15e6a745d00d/go.mod h1:TUMDPcDPOXvLBX5SgrIP5/xm6J3q9VghpuPulU/rsIA=
 go.matteson.dev/tess v0.0.0-20210324223135-d4b6ad5a3ab0 h1:2f8tl1q9mplYukP3OnoPRBdeSYy0NwIf3x9+u3vKjrg=
