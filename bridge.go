@@ -20,9 +20,9 @@ func fzgo_fill_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, eve
 	rgb := getRGBColor(ctx, color, colorspace, alpha, colorParams)
 	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 
-	fillRule := FillRuleWinding
+	fillRule := gfx.FillRuleWinding
 	if evenOdd != 0 {
-		fillRule = FillRuleEvenOdd
+		fillRule = gfx.FillRuleEvenOdd
 	}
 
 	device.FillPath(p, fillRule, matrix, rgb)
@@ -54,18 +54,18 @@ func fzgo_fill_shade(ctx *C.fz_context, dev *C.fz_device, shade *C.fz_shade, ctm
 	shaderMatrix := gfx.NewMatrix(float64(shade.matrix.a), float64(shade.matrix.b), float64(shade.matrix.c), float64(shade.matrix.d), float64(shade.matrix.e), float64(shade.matrix.f))
 	bounds := rectFromFitz(C.fz_bound_shade(ctx, shade, C.fz_identity))
 
-	shader := &Shader{
+	shader := &gfx.Shader{
 		Matrix: shaderMatrix,
 		Bounds: bounds,
 	}
 
 	switch shade._type {
 	case C.FZ_FUNCTION_BASED:
-		shader.Kind = FunctionShaderKind
+		shader.Kind = gfx.FunctionShaderKind
 	case C.FZ_RADIAL:
-		shader.Kind = RadialShaderKind
+		shader.Kind = gfx.RadialShaderKind
 	case C.FZ_MESH_TYPE4, C.FZ_MESH_TYPE5, C.FZ_MESH_TYPE6, C.FZ_MESH_TYPE7:
-		shader.Kind = MeshShaderKind
+		shader.Kind = gfx.MeshShaderKind
 	}
 
 	device.FillShade(shader, matrix, float64(alpha))
@@ -110,9 +110,9 @@ func fzgo_clip_path(ctx *C.fz_context, dev *C.fz_device, path *C.cfz_path_t, eve
 	p := makePath(ctx, path)
 	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	sci := rectFromFitz(scissor)
-	fillRule := FillRuleWinding
+	fillRule := gfx.FillRuleWinding
 	if evenOdd != 0 {
-		fillRule = FillRuleEvenOdd
+		fillRule = gfx.FillRuleEvenOdd
 	}
 
 	device.ClipPath(p, fillRule, matrix, sci)
@@ -256,13 +256,13 @@ func fzgo_begin_group(ctx *C.fz_context, dev *C.fz_device, rect C.fz_rect, cs *C
 		return
 	}
 	r := rectFromFitz(rect)
-	colorspace := &Colorspace{
-		Kind:          ColorspaceKind(cs._type),
+	colorspace := &gfx.Colorspace{
+		Kind:          gfx.ColorspaceKind(cs._type),
 		Name:          C.GoString(C.fz_colorspace_name(ctx, cs)),
 		ColorantCount: int(C.fz_colorspace_n(ctx, cs)),
 		Flags:         uint32(cs.flags),
 	}
-	device.BeginGroup(r, colorspace, isolated != 0, knockout != 0, BlendMode(blendmode), float64(alpha))
+	device.BeginGroup(r, colorspace, isolated != 0, knockout != 0, gfx.BlendMode(blendmode), float64(alpha))
 }
 
 //export fzgo_end_group

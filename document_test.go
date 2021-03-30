@@ -8,8 +8,21 @@ import (
 	"testing"
 
 	"go.matteson.dev/fitz"
+	"go.matteson.dev/gfx"
 	"go.matteson.dev/no/x/urlx"
 )
+
+func TestDocumentFont(t *testing.T) {
+	doc, err := fitz.NewDocument("/Users/bryan/Desktop/cardiac-compass.pdf")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer doc.Close()
+
+	pg, _ := doc.LoadPage(0)
+	img, _ := pg.RenderImage(pg.Bounds(), 3)
+	pg.RunDevice(fitz.NewDrawDevice(gfx.IdentityMatrix, img))
+}
 
 func TestDocumentSplit(t *testing.T) {
 	doc, err := fitz.NewDocument("/Users/bryan/Desktop/scratch/mdt3.pdf")

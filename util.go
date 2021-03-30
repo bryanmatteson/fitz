@@ -1,13 +1,15 @@
 package fitz
 
 // #include "bridge.h"
+// #include "deps/mupdf/thirdparty/freetype/include/freetype/freetype.h"
 import "C"
 import (
 	"image/color"
+	"io/ioutil"
+	"log"
+	"os"
 	"unsafe"
 
-	"github.com/llgcode/draw2d"
-	"github.com/llgcode/draw2d/draw2dimg"
 	"go.matteson.dev/gfx"
 )
 
@@ -44,17 +46,17 @@ func getRGBColor(ctx *C.fz_context, col *C.float, colorspace *C.fz_colorspace, a
 	}
 }
 
-func getStroke(stroke *C.fz_stroke_state) *Stroke {
+func getStroke(stroke *C.fz_stroke_state) *gfx.Stroke {
 	dashes := make([]float64, int(stroke.dash_len))
 	for i := 0; i < int(stroke.dash_len); i++ {
 		dashes[i] = float64(stroke.dash_list[i])
 	}
 
-	return &Stroke{
-		StartCap:   LineCap(stroke.start_cap),
-		DashCap:    LineCap(stroke.dash_cap),
-		EndCap:     LineCap(stroke.end_cap),
-		LineJoin:   LineJoin(stroke.linejoin),
+	return &gfx.Stroke{
+		StartCap:   gfx.LineCap(stroke.start_cap),
+		DashCap:    gfx.LineCap(stroke.dash_cap),
+		EndCap:     gfx.LineCap(stroke.end_cap),
+		LineJoin:   gfx.LineJoin(stroke.linejoin),
 		LineWidth:  float64(stroke.linewidth),
 		MiterLimit: float64(stroke.miterlimit),
 		DashPhase:  float64(stroke.dash_phase),
@@ -103,7 +105,7 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 		bbox := C.fz_font_bbox(ctx, span.font)
 
 		spanMat := matrixFromFitz(span.trm)
-		letters := make([]Letter, 0, span.len)
+		letters := make(gfx.Letters, 0, span.len)
 		quads := make(gfx.Quads, 0, span.len)
 
 		for i := 0; i < int(span.len); i++ {
@@ -164,26 +166,26 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 			quad = gfx.RectToQuad(glyphBounds)
 			quads = append(quads, quad)
 
-			letter := Letter{
-				Rune:          rune(item.ucs),
-				Font:          font,
-				GlyphPath:     makePath(ctx, glyphPath),
+			letter := gfx.Letter{
+				Rune: rune(item.ucs),
+				Font: font,
+				// GlyphPath:     makePath(ctx, glyphPath),
 				Quad:          quad,
 				Size:          size,
 				Color:         col,
 				StartBaseline: p,
 				EndBaseline:   q,
-				GlyphBounds:   glyphBounds,
+				// GlyphBounds:   glyphBounds,
 			}
 
 			letters = append(letters, letter)
 		}
 
 		sp := &TextSpan{
-			Font:    font,
-			WMode:   int(wmode),
-			Letters: letters,
-			Quad:    quads.Union(),
+			FontData: font,
+			WMode:    int(wmode),
+			Letters:  letters,
+			Quad:     quads.Union(),
 		}
 
 		text.Spans = append(text.Spans, sp)
@@ -191,69 +193,39 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 	return
 }
 
-func getFontInfo(ctx *C.fz_context, span *C.fz_text_span) (font *Font) {
-	fontFamily := FontFamilySans
+func getFontInfo(ctx *C.fz_context, span *C.fz_text_span) (font *gfx.FontData) {
+	fontFamily := gfx.FontFamilySans
 	if C.fz_font_is_serif(ctx, span.font) != 0 {
-		fontFamily = FontFamilySerif
+		fontFamily = gfx.FontFamilySerif
 	} else if C.fz_font_is_monospaced(ctx, span.font) != 0 {
-		fontFamily = FontFamilyMono
+		fontFamily = gfx.FontFamilyMono
 	}
-	fontStyle := FontStyleNormal
+	fontStyle := gfx.FontStyleNormal
 	if C.fz_font_is_bold(ctx, span.font) != 0 {
-		fontStyle |= FontStyleBold
+		fontStyle |= gfx.FontStyleBold
 	} else if C.fz_font_is_italic(ctx, span.font) != 0 {
-		fontStyle |= FontStyleItalic
+		fontStyle |= gfx.FontStyleItalic
 	}
 
 	fontName := C.GoString(C.fz_font_name(ctx, span.font))
-
-	font = GetFont(fontName, fontStyle, fontFamily)
-	if font == nil {
-		font = &Font{
-			Name:   fontName,
-			Family: fontFamily,
-			Style:  fontStyle,
-		}
-		RegisterFont(font)
+	font = &gfx.FontData{
+		Name:   fontName,
+		Family: fontFamily,
+		Style:  fontStyle,
 	}
+
+	cache := gfx.GetGlobalFontCache()
+	if !cache.Has(*font) {
+		data := C.GoBytes(unsafe.Pointer(span.font.buffer.data), C.int(span.font.buffer.len))
+		var face C.FT_Face = (C.FT_Face)(span.font.ft_face)
+		famName := C.GoString(face.family_name)
+		styleName := C.GoString(face.style_name)
+		_, _ = famName, styleName
+		ioutil.WriteFile("/Users/bryan/Desktop/font.ttf", data, os.ModePerm)
+		if err := cache.Store(*font, data); err != nil {
+			log.Printf("%v", err)
+		}
+	}
+
 	return
-}
-
-func drawPath(ctx *draw2dimg.GraphicContext, path *gfx.Path) {
-	var j = 0
-	for _, cmd := range path.Components {
-		switch cmd {
-		case gfx.MoveToComp:
-			ctx.MoveTo(path.Points[j].X, path.Points[j].Y)
-		case gfx.LineToComp:
-			ctx.LineTo(path.Points[j].X, path.Points[j].Y)
-		case gfx.QuadCurveToComp:
-			ctx.QuadCurveTo(path.Points[j].X, path.Points[j].Y, path.Points[j+1].X, path.Points[j+1].Y)
-		case gfx.CubicCurveToComp:
-			ctx.CubicCurveTo(path.Points[j].X, path.Points[j].Y, path.Points[j+1].X, path.Points[j+1].Y, path.Points[j+2].X, path.Points[j+2].Y)
-		case gfx.ClosePathComp:
-			ctx.Close()
-		}
-		j += cmd.PointCount()
-	}
-}
-
-func toDrawMatrix(mat gfx.Matrix) draw2d.Matrix {
-	return draw2d.Matrix{mat.A, mat.B, mat.C, mat.D, mat.E, mat.F}
-}
-
-func drawRect(ctx *draw2dimg.GraphicContext, rect gfx.Rect) {
-	ctx.MoveTo(rect.X.Min, rect.Y.Min)
-	ctx.LineTo(rect.X.Min, rect.Y.Max)
-	ctx.LineTo(rect.X.Max, rect.Y.Max)
-	ctx.LineTo(rect.X.Max, rect.Y.Min)
-	ctx.Close()
-}
-
-func drawQuad(ctx *draw2dimg.GraphicContext, quad gfx.Quad) {
-	ctx.MoveTo(quad.BottomLeft.X, quad.BottomLeft.Y)
-	ctx.LineTo(quad.TopLeft.X, quad.TopLeft.Y)
-	ctx.LineTo(quad.TopRight.X, quad.TopRight.Y)
-	ctx.LineTo(quad.BottomRight.X, quad.BottomRight.Y)
-	ctx.Close()
 }

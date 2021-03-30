@@ -10,23 +10,23 @@ import (
 type GoDevice interface {
 	ShouldCall(CommandKind) bool
 
-	FillPath(path *gfx.Path, fillRule FillRule, ctm gfx.Matrix, color color.Color)
-	StrokePath(path *gfx.Path, stroke *Stroke, ctm gfx.Matrix, color color.Color)
-	FillShade(shade *Shader, ctm gfx.Matrix, alpha float64)
+	FillPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.Matrix, color color.Color)
+	StrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.Matrix, color color.Color)
+	FillShade(shade *gfx.Shader, ctm gfx.Matrix, alpha float64)
 	FillImage(image *Image, ctm gfx.Matrix, alpha float64)
 	FillImageMask(image *Image, ctm gfx.Matrix, color color.Color)
-	ClipPath(path *gfx.Path, fillRule FillRule, ctm gfx.Matrix, scissor gfx.Rect)
-	ClipStrokePath(path *gfx.Path, stroke *Stroke, ctm gfx.Matrix, scissor gfx.Rect)
+	ClipPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.Matrix, scissor gfx.Rect)
+	ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.Matrix, scissor gfx.Rect)
 	ClipImageMask(image *Image, ctm gfx.Matrix, scissor gfx.Rect)
 	FillText(text *Text, ctm gfx.Matrix, color color.Color)
-	StrokeText(text *Text, stroke *Stroke, ctm gfx.Matrix, color color.Color)
+	StrokeText(text *Text, stroke *gfx.Stroke, ctm gfx.Matrix, color color.Color)
 	ClipText(text *Text, ctm gfx.Matrix, scissor gfx.Rect)
-	ClipStrokeText(text *Text, stroke *Stroke, ctm gfx.Matrix, scissor gfx.Rect)
+	ClipStrokeText(text *Text, stroke *gfx.Stroke, ctm gfx.Matrix, scissor gfx.Rect)
 	IgnoreText(text *Text, ctm gfx.Matrix)
 	PopClip()
 	BeginMask(rect gfx.Rect, color color.Color, luminosity int)
 	EndMask()
-	BeginGroup(rect gfx.Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64)
+	BeginGroup(rect gfx.Rect, cs *gfx.Colorspace, isolated bool, knockout bool, blendmode gfx.BlendMode, alpha float64)
 	EndGroup()
 	BeginTile() int
 	EndTile()
@@ -65,35 +65,35 @@ const (
 type BaseDevice struct{}
 
 func (dev *BaseDevice) ShouldCall(CommandKind) bool { return true }
-func (dev *BaseDevice) FillPath(path *gfx.Path, fillRule FillRule, matrix gfx.Matrix, color color.Color) {
+func (dev *BaseDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, color color.Color) {
 }
 
-func (dev *BaseDevice) StrokePath(path *gfx.Path, stroke *Stroke, matrix gfx.Matrix, color color.Color) {
+func (dev *BaseDevice) StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color) {
 }
 
-func (dev *BaseDevice) FillShade(shade *Shader, matrix gfx.Matrix, alpha float64)        {}
+func (dev *BaseDevice) FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64)    {}
 func (dev *BaseDevice) FillImage(image *Image, matrix gfx.Matrix, alpha float64)         {}
 func (dev *BaseDevice) FillImageMask(image *Image, matrix gfx.Matrix, color color.Color) {}
-func (dev *BaseDevice) ClipPath(path *gfx.Path, fillRule FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *BaseDevice) ClipPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *BaseDevice) ClipStrokePath(path *gfx.Path, stroke *Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *BaseDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
 func (dev *BaseDevice) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {}
 func (dev *BaseDevice) FillText(txt *Text, matrix gfx.Matrix, color color.Color)        {}
-func (dev *BaseDevice) StrokeText(txt *Text, stroke *Stroke, matrix gfx.Matrix, color color.Color) {
+func (dev *BaseDevice) StrokeText(txt *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color) {
 }
 
 func (dev *BaseDevice) ClipText(txt *Text, matrix gfx.Matrix, scissor gfx.Rect) {}
-func (dev *BaseDevice) ClipStrokeText(txt *Text, stroke *Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *BaseDevice) ClipStrokeText(txt *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
 func (dev *BaseDevice) IgnoreText(txt *Text, matrix gfx.Matrix)                    {}
 func (dev *BaseDevice) PopClip()                                                   {}
 func (dev *BaseDevice) BeginMask(rect gfx.Rect, color color.Color, luminosity int) {}
 func (dev *BaseDevice) EndMask()                                                   {}
-func (dev *BaseDevice) BeginGroup(rect gfx.Rect, cs *Colorspace, isolated bool, knockout bool, blendmode BlendMode, alpha float64) {
+func (dev *BaseDevice) BeginGroup(rect gfx.Rect, cs *gfx.Colorspace, isolated bool, knockout bool, blendmode gfx.BlendMode, alpha float64) {
 }
 
 func (dev *BaseDevice) EndGroup()                   {}
