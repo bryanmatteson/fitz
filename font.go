@@ -13,7 +13,6 @@ type fitzFont struct {
 	ctx  *C.fz_context
 	font *C.fz_font
 	info gfx.FontData
-	bbox gfx.Rect
 }
 
 func newfitzfont(ctx *C.fz_context, font *C.fz_font) gfx.Font {
@@ -38,26 +37,28 @@ func newfitzfont(ctx *C.fz_context, font *C.fz_font) gfx.Font {
 		Family: fontFamily,
 	}
 
-	bbox := C.fz_font_bbox(ctx, font)
-
 	return &fitzFont{
 		ctx:  ctx,
 		font: font,
 		info: info,
-		bbox: gfx.MakeRect(float64(bbox.x0), float64(bbox.y0), float64(bbox.x1), float64(bbox.y1)),
 	}
 }
 
-func (f *fitzFont) Name() string          { return f.info.Name }
-func (f *fitzFont) BoundingBox() gfx.Rect { return f.bbox }
-func (f *fitzFont) Info() gfx.FontData    { return f.info }
+func (f *fitzFont) Info() gfx.FontData { return f.info }
+func (f *fitzFont) Name() string       { return f.info.Name }
+
+func (f *fitzFont) BoundingBox() gfx.Rect {
+	bbox := C.fz_font_bbox(f.ctx, f.font)
+	return gfx.MakeRect(float64(bbox.x0), float64(bbox.y0), float64(bbox.x1), float64(bbox.y1))
+}
 
 func (f *fitzFont) Glyph(chr rune, trm gfx.Matrix) *gfx.Glyph {
 	mat := C.fz_matrix{C.float(trm.A), C.float(trm.B), C.float(trm.C), C.float(trm.D), C.float(trm.E), C.float(trm.F)}
 	gid := int(C.fz_encode_character(f.ctx, f.font, C.int(chr)))
-	glyphPath := C.fz_outline_glyph(f.ctx, f.font, C.int(gid), mat)
-	defer C.fz_drop_path(f.ctx, glyphPath)
 	width := float64(C.fz_advance_glyph(f.ctx, f.font, C.int(gid), 0))
+	glyphPath := C.fz_outline_glyph(f.ctx, f.font, C.int(gid), mat)
+
+	defer C.fz_drop_path(f.ctx, glyphPath)
 	path := makePath(f.ctx, glyphPath)
 
 	return &gfx.Glyph{
@@ -66,7 +67,10 @@ func (f *fitzFont) Glyph(chr rune, trm gfx.Matrix) *gfx.Glyph {
 	}
 }
 
-func (f *fitzFont) Advance(chr rune, mode int) float64 { return 0 }
+func (f *fitzFont) Advance(chr rune, mode int) float64 {
+	gid := int(C.fz_encode_character(f.ctx, f.font, C.int(chr)))
+	return float64(C.fz_advance_glyph(f.ctx, f.font, C.int(gid), C.int(mode)))
+}
 
 type fontCache struct {
 	mut   sync.Mutex
