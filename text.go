@@ -11,6 +11,7 @@ type TextSpan struct {
 	Font    gfx.Font
 	Matrix  gfx.Matrix
 	WMode   int
+	Quad    gfx.Quad
 }
 
 func (s *TextSpan) String() string {

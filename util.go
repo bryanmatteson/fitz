@@ -99,6 +99,7 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 		spanmat := matrixFromFitz(span.trm)
 		wmode := int(C.fz_text_span_wmode(span))
 		bbox := C.fz_font_bbox(ctx, span.font)
+		quads := make(gfx.Quads, int(span.len))
 
 		for i := 0; i < int(span.len); i++ {
 			item := (*C.fz_text_item)(unsafe.Pointer(uintptr(unsafe.Pointer(span.items)) + uintptr(i)*unsafe.Sizeof(*span.items)))
@@ -139,6 +140,8 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 				TopRight:    gfx.Point{X: q.X + a.X, Y: q.Y + a.Y},
 			}
 
+			quads[i] = quad
+
 			gb := C.fz_bound_glyph(ctx, span.font, item.gid, C.fz_identity)
 			letters = append(letters, Letter{
 				Rune:    rune(item.ucs),
@@ -154,6 +157,7 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 			WMode:   wmode,
 			Letters: letters,
 			Matrix:  spanmat,
+			Quad:    quads.Union(),
 		})
 	}
 	return
