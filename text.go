@@ -38,6 +38,5 @@ type Letter struct {
 	Rune    rune
 	GlyphID int
 	Origin  gfx.Point
-	Box     gfx.Rect
 	Quad    gfx.Quad
 }

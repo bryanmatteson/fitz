@@ -101,13 +101,16 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 		bbox := C.fz_font_bbox(ctx, span.font)
 		quads := make(gfx.Quads, int(span.len))
 
+		ascender := float64(C.fz_font_ascender(ctx, span.font))
+		descender := float64(C.fz_font_descender(ctx, span.font))
+
 		for i := 0; i < int(span.len); i++ {
 			item := (*C.fz_text_item)(unsafe.Pointer(uintptr(unsafe.Pointer(span.items)) + uintptr(i)*unsafe.Sizeof(*span.items)))
 			if item.ucs == -1 {
 				continue
 			}
 
-			trm := spanmat.Translated(float64(item.x), float64(item.y)).Concat(matrixFromFitz(ctm))
+			x, y := float64(item.x), float64(item.y)
 
 			var adv float64 = 0
 			if item.gid >= 0 {
@@ -121,17 +124,22 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 				dir.X, dir.Y = 0, -1
 			}
 
+			dir = spanmat.TransformVec(dir)
+
 			if wmode == 0 {
-				p.X, p.Y = trm.E, trm.F
-				q.X, q.Y = trm.E+adv*dir.X, trm.F+adv*dir.Y
-				a.X, a.Y = 0, float64(C.fz_font_ascender(ctx, span.font))
-				d.X, d.Y = 0, float64(C.fz_font_descender(ctx, span.font))
+				p.X, p.Y = x, y
+				q.X, q.Y = x+adv*dir.X, y+adv*dir.Y
+				a.X, a.Y = 0, ascender+descender
+				d.X, d.Y = 0, descender
 			} else {
-				q.X, q.Y = trm.E, trm.F
-				p.X, p.Y = trm.E-adv*dir.X, trm.F-adv*dir.Y
+				q.X, q.Y = x, y
+				p.X, p.Y = x-adv*dir.X, y-adv*dir.Y
 				a.X, a.Y = float64(bbox.x1), 0
 				d.X, d.Y = float64(bbox.x0), 0
 			}
+
+			a = spanmat.TransformVec(a)
+			d = spanmat.TransformVec(d)
 
 			quad := gfx.Quad{
 				BottomLeft:  gfx.Point{X: p.X + d.X, Y: p.Y + d.Y},
@@ -142,12 +150,10 @@ func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col colo
 
 			quads[i] = quad
 
-			gb := C.fz_bound_glyph(ctx, span.font, item.gid, C.fz_identity)
 			letters = append(letters, Letter{
 				Rune:    rune(item.ucs),
 				GlyphID: int(item.gid),
 				Origin:  gfx.MakePoint(float64(item.x), float64(item.y)),
-				Box:     gfx.MakeRect(float64(gb.x0), float64(gb.y0), float64(gb.x1), float64(gb.y1)),
 				Quad:    quad,
 			})
 		}
