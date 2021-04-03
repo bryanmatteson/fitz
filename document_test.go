@@ -18,13 +18,13 @@ import (
 )
 
 func TestDocumentFont(t *testing.T) {
-	doc, err := fitz.NewDocument("/Users/bryan/Desktop/mupdf_explored.pdf")
+	doc, err := fitz.NewDocument("/Users/bryan/Desktop/scratch/mdt3.pdf")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer doc.Close()
 
-	pg, _ := doc.LoadPage(1)
+	pg, _ := doc.LoadPage(0)
 	trm := gfx.NewScaleMatrix(3, 3)
 	bounds := trm.TransformRect(pg.Bounds())
 	img := image.NewRGBA(bounds.ImageRect())

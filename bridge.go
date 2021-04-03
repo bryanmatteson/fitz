@@ -80,7 +80,7 @@ func fzgo_fill_image(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image, ctm
 	}
 
 	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
-	im := getImage(ctx, ctm, image, colorParams)
+	im := getImage(ctx, image, colorParams)
 
 	device.FillImage(im, matrix, float64(alpha))
 }
@@ -95,7 +95,7 @@ func fzgo_fill_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image
 
 	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	rgb := getRGBColor(ctx, color, colorspace, alpha, colorParams)
-	im := getImage(ctx, ctm, image, colorParams)
+	im := getImage(ctx, image, colorParams)
 
 	device.FillImageMask(im, matrix, rgb)
 }
@@ -213,7 +213,7 @@ func fzgo_clip_image_mask(ctx *C.fz_context, dev *C.fz_device, image *C.fz_image
 
 	matrix := gfx.NewMatrix(float64(ctm.a), float64(ctm.b), float64(ctm.c), float64(ctm.d), float64(ctm.e), float64(ctm.f))
 	sci := rectFromFitz(scissor)
-	im := getImage(ctx, ctm, image, C.fz_default_color_params)
+	im := getImage(ctx, image, C.fz_default_color_params)
 
 	device.ClipImageMask(im, matrix, sci)
 }

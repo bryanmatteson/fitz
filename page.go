@@ -37,8 +37,8 @@ func (p *Page) Bounds() gfx.Rect { return rectFromFitz(p.bounds) }
 func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err error) {
 	p.mut.Lock()
 	defer p.mut.Unlock()
-	img = &image.RGBA{}
 
+	img = &image.RGBA{}
 	bounds := p.bounds
 	ctm := C.fz_identity
 

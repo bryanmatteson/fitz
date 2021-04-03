@@ -10,21 +10,14 @@ import (
 )
 
 type Image struct {
-	Rect  gfx.Rect
-	Frame gfx.Rect
-
+	Rect    gfx.Rect
 	Data    []byte
 	Stride  int
 	NumComp int
 }
 
-func (img Image) ColorModel() color.Model {
-	return color.RGBAModel
-}
-
-func (img Image) Bounds() image.Rectangle {
-	return image.Rect(int(img.Rect.X.Min), int(img.Rect.Y.Min), int(img.Rect.X.Max), int(img.Rect.Y.Max))
-}
+func (img Image) ColorModel() color.Model { return color.RGBAModel }
+func (img Image) Bounds() image.Rectangle { return img.Rect.ImageRect() }
 
 func (img Image) PngBytes() []byte {
 	var buf bytes.Buffer
@@ -51,6 +44,6 @@ func (img Image) At(x, y int) color.Color {
 	case 1:
 		return color.Gray{Y: s[0]}
 	default:
-		return color.Transparent
+		return color.RGBA{}
 	}
 }
