@@ -16,6 +16,7 @@ typedef const fz_path_walker cfz_path_walker;
 typedef const void* cvoidptr_t;
 
 fz_context* fzgo_new_context();
+fz_context* fzgo_new_user_context(void* user);
 fz_device* fz_new_go_device(fz_context* ctx, void* user_data);
 pdf_obj* pdfname(int typ);
 int fz_text_span_wmode(fz_text_span* span);

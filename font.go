@@ -1,1 +1,155 @@
 package fitz
+
+// #include "bridge.h"
+import "C"
+import (
+	"log"
+	"sync"
+
+	"go.matteson.dev/gfx"
+)
+
+type fitzFont struct {
+	ctx  *C.fz_context
+	font *C.fz_font
+	info gfx.FontData
+	bbox gfx.Rect
+}
+
+func newfitzfont(ctx *C.fz_context, font *C.fz_font) gfx.Font {
+	fontFamily := gfx.FontFamilySans
+	if C.fz_font_is_serif(ctx, font) != 0 {
+		fontFamily = gfx.FontFamilySerif
+	} else if C.fz_font_is_monospaced(ctx, font) != 0 {
+		fontFamily = gfx.FontFamilyMono
+	}
+
+	fontStyle := gfx.FontStyleNormal
+	if C.fz_font_is_bold(ctx, font) != 0 {
+		fontStyle |= gfx.FontStyleBold
+	} else if C.fz_font_is_italic(ctx, font) != 0 {
+		fontStyle |= gfx.FontStyleItalic
+	}
+
+	fontName := C.GoString(C.fz_font_name(ctx, font))
+	info := gfx.FontData{
+		Name:   fontName,
+		Style:  fontStyle,
+		Family: fontFamily,
+	}
+
+	bbox := C.fz_font_bbox(ctx, font)
+
+	return &fitzFont{
+		ctx:  ctx,
+		font: font,
+		info: info,
+		bbox: gfx.MakeRect(float64(bbox.x0), float64(bbox.y0), float64(bbox.x1), float64(bbox.y1)),
+	}
+}
+
+func (f *fitzFont) Name() string          { return f.info.Name }
+func (f *fitzFont) BoundingBox() gfx.Rect { return f.bbox }
+func (f *fitzFont) Info() gfx.FontData    { return f.info }
+
+func (f *fitzFont) Glyph(chr rune, trm gfx.Matrix) *gfx.Glyph {
+	mat := C.fz_matrix{C.float(trm.A), C.float(trm.B), C.float(trm.C), C.float(trm.D), C.float(trm.E), C.float(trm.F)}
+	gid := int(C.fz_encode_character(f.ctx, f.font, C.int(chr)))
+	glyphPath := C.fz_outline_glyph(f.ctx, f.font, C.int(gid), mat)
+	defer C.fz_drop_path(f.ctx, glyphPath)
+	width := float64(C.fz_advance_glyph(f.ctx, f.font, C.int(gid), 0))
+	path := makePath(f.ctx, glyphPath)
+
+	return &gfx.Glyph{
+		Path:  path,
+		Width: width,
+	}
+}
+
+func (f *fitzFont) Advance(chr rune, mode int) float64 { return 0 }
+
+type fontCache struct {
+	mut   sync.Mutex
+	fonts map[string]gfx.Font
+}
+
+func newfontcache() *fontCache {
+	return &fontCache{fonts: make(map[string]gfx.Font)}
+}
+
+func (fc *fontCache) init(ctx *C.fz_context, doc *C.pdf_document) {
+	fc.mut.Lock()
+	defer fc.mut.Unlock()
+
+	var fonts []*C.pdf_obj
+	numPages := int(C.pdf_count_pages(ctx, doc))
+
+	for i := 0; i < numPages; i++ {
+		pgref := C.pdf_lookup_page_obj(ctx, doc, C.int(i))
+		if pgref == nil {
+			log.Printf("cannot get info from page %d", i)
+			continue
+		}
+		rsrc := C.pdf_dict_get(ctx, pgref, pdfName(C.PDF_ENUM_NAME_Resources))
+		fontObj := C.pdf_dict_get(ctx, rsrc, pdfName(C.PDF_ENUM_NAME_Font))
+
+		if fontObj == nil {
+			continue
+		}
+
+		n := int(C.pdf_dict_len(ctx, fontObj))
+		for i := 0; i < n; i++ {
+			fontDict := C.pdf_dict_get_val(ctx, fontObj, C.int(i))
+			if C.pdf_is_dict(ctx, fontDict) == 0 {
+				log.Printf("not a font dict (%d 0 R)", int(C.pdf_to_num(ctx, fontDict)))
+				continue
+			}
+
+			found := false
+			for _, f := range fonts {
+				if C.pdf_objcmp(ctx, f, fontDict) == 0 {
+					found = true
+					break
+				}
+			}
+			if found {
+				continue
+			}
+
+			fonts = append(fonts, fontDict)
+
+			desc := C.pdf_load_font(ctx, doc, rsrc, fontDict)
+			if desc == nil {
+				desc = C.pdf_load_hail_mary_font(ctx, doc)
+			}
+
+			font := newfitzfont(ctx, desc.font)
+			key := font.Info().String()
+			if _, ok := fc.fonts[key]; !ok {
+				fc.fonts[key] = font
+			}
+		}
+	}
+}
+
+func (fc *fontCache) Load(fontData gfx.FontData) (gfx.Font, error) {
+	fc.mut.Lock()
+	defer fc.mut.Unlock()
+
+	key := fontData.String()
+	if font, ok := fc.fonts[key]; ok {
+		return font, nil
+	}
+
+	return nil, nil
+}
+
+func (fc *fontCache) Store(font gfx.Font) {
+	fc.mut.Lock()
+	defer fc.mut.Unlock()
+
+	key := font.Info().String()
+	if _, ok := fc.fonts[key]; !ok {
+		fc.fonts[key] = font
+	}
+}

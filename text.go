@@ -7,10 +7,10 @@ import (
 )
 
 type TextSpan struct {
-	FontData *gfx.FontData
-	WMode    int
-	Letters  gfx.Letters
-	Quad     gfx.Quad
+	Letters Letters
+	Font    gfx.Font
+	Matrix  gfx.Matrix
+	WMode   int
 }
 
 func (s *TextSpan) String() string {
@@ -22,5 +22,19 @@ func (s *TextSpan) String() string {
 }
 
 type Text struct {
-	Spans []*TextSpan
+	FontCache gfx.FontCache
+	Spans     []*TextSpan
+}
+
+// Writing modes
+const (
+	WModeHorizontal int = iota
+	WModeVertical
+)
+
+type Letters []Letter
+type Letter struct {
+	Rune    rune
+	GlyphID int
+	Origin  gfx.Point
 }

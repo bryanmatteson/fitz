@@ -1,9 +1,14 @@
 package fitz_test
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"image"
+	"image/png"
+	"io/ioutil"
 	"net/url"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -13,15 +18,22 @@ import (
 )
 
 func TestDocumentFont(t *testing.T) {
-	doc, err := fitz.NewDocument("/Users/bryan/Desktop/cardiac-compass.pdf")
+	doc, err := fitz.NewDocument("/Users/bryan/Desktop/mupdf_explored.pdf")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer doc.Close()
 
-	pg, _ := doc.LoadPage(0)
-	img, _ := pg.RenderImage(pg.Bounds(), 3)
-	pg.RunDevice(fitz.NewDrawDevice(gfx.IdentityMatrix, img))
+	pg, _ := doc.LoadPage(1)
+	trm := gfx.NewScaleMatrix(3, 3)
+	bounds := trm.TransformRect(pg.Bounds())
+	img := image.NewRGBA(bounds.ImageRect())
+
+	pg.RunDevice(fitz.NewDrawDevice(gfx.NewScaleMatrix(3, 3), img))
+
+	var buf bytes.Buffer
+	png.Encode(&buf, img)
+	ioutil.WriteFile("/Users/bryan/Desktop/test.png", buf.Bytes(), os.ModePerm)
 }
 
 func TestDocumentSplit(t *testing.T) {

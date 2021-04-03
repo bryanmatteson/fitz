@@ -16,6 +16,7 @@ type DrawDevice struct {
 
 func NewDrawDevice(transform gfx.Matrix, dest *image.RGBA) GoDevice {
 	ctx := gfx.NewImageContext(dest)
+	ctx.Clear()
 	return &DrawDevice{image: dest, context: ctx, transform: transform}
 }
 
@@ -28,11 +29,8 @@ func (dev *DrawDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.M
 
 func (dev *DrawDevice) StrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.Matrix, strokeColor color.Color) {
 	dev.context.SetTransformationMatrix(ctm.Concat(dev.transform))
+	dev.context.SetStroke(stroke)
 	dev.context.SetStrokeColor(strokeColor)
-	dev.context.SetLineCap(stroke.StartCap)
-	dev.context.SetLineJoin(stroke.LineJoin)
-	dev.context.SetLineDash(stroke.Dashes, stroke.DashPhase)
-	dev.context.SetLineWidth(stroke.LineWidth)
 	dev.context.Stroke(path)
 }
 
@@ -53,39 +51,34 @@ func (dev *DrawDevice) FillImage(image *Image, ctm gfx.Matrix, alpha float64) {
 func (dev *DrawDevice) FillImageMask(image *Image, ctm gfx.Matrix, color color.Color) {}
 func (dev *DrawDevice) ClipPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.Matrix, scissor gfx.Rect) {
 }
+
 func (dev *DrawDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.Matrix, scissor gfx.Rect) {
 }
+
 func (dev *DrawDevice) ClipImageMask(image *Image, ctm gfx.Matrix, scissor gfx.Rect) {}
 
 func (dev *DrawDevice) FillText(text *Text, ctm gfx.Matrix, fillColor color.Color) {
-	ctm = ctm.Concat(dev.transform)
-	dev.context.SetTransformationMatrix(ctm)
+	dev.context.SetTransformationMatrix(gfx.IdentityMatrix)
+	dev.context.SetFillColor(fillColor)
 
 	for _, span := range text.Spans {
 		for _, letter := range span.Letters {
-			_ = letter
-			// dev.context.SetFillColor(fillColor)
-			// drawPath(dev.context, letter.GlyphPath)
-			// dev.context.Fill()
+			glyph := span.Font.Glyph(letter.Rune, span.Matrix.Translated(letter.Origin.X, letter.Origin.Y).Compose(ctm, dev.transform))
+			dev.context.Fill(glyph.Path)
 		}
 	}
 }
 
 func (dev *DrawDevice) StrokeText(text *Text, stroke *gfx.Stroke, ctm gfx.Matrix, color color.Color) {
-	ctm = ctm.Concat(dev.transform)
-	dev.context.SetTransformationMatrix(ctm)
+	dev.context.SetTransformationMatrix(gfx.IdentityMatrix)
 
 	dev.context.SetStrokeColor(color)
-	dev.context.SetLineCap(stroke.StartCap)
-	dev.context.SetLineJoin(stroke.LineJoin)
-	dev.context.SetLineDash(stroke.Dashes, stroke.DashPhase)
-	dev.context.SetLineWidth(stroke.LineWidth)
+	dev.context.SetStroke(stroke)
 
 	for _, span := range text.Spans {
 		for _, letter := range span.Letters {
-			_ = letter
-			// drawPath(dev.context, letter.GlyphPath)
-			// dev.context.Stroke()
+			glyph := span.Font.Glyph(letter.Rune, span.Matrix.Translated(letter.Origin.X, letter.Origin.Y).Compose(ctm, dev.transform))
+			dev.context.Stroke(glyph.Path)
 		}
 	}
 }

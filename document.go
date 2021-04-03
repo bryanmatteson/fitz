@@ -4,14 +4,15 @@ package fitz
 import "C"
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"sync"
 	"unsafe"
+
+	"github.com/mattn/go-pointer"
+	"go.matteson.dev/gfx"
 )
 
 type Document struct {
@@ -34,72 +35,8 @@ func NewDocument(source interface{}) (*Document, error) {
 	}
 }
 
-func (d *Document) loadFont(num int) {
-	ref := C.pdf_new_indirect(d.ctx, d.native, C.int(num), 0)
-	defer C.pdf_drop_obj(d.ctx, ref)
-
-	if isFontDesc(d.ctx, ref) {
-		var stream *C.pdf_obj
-		var ext string
-
-		obj := C.pdf_dict_get(d.ctx, ref, pdfName(C.PDF_ENUM_NAME_FontFile))
-		if obj != nil {
-			stream = obj
-			ext = "pfa"
-		}
-
-		obj = C.pdf_dict_get(d.ctx, ref, pdfName(C.PDF_ENUM_NAME_FontFile2))
-		if obj != nil {
-			stream = obj
-			ext = "ttf"
-		}
-
-		obj = C.pdf_dict_get(d.ctx, ref, pdfName(C.PDF_ENUM_NAME_FontFile3))
-		if obj != nil {
-			stream = obj
-			obj = C.pdf_dict_get(d.ctx, obj, pdfName(C.PDF_ENUM_NAME_Subtype))
-			if obj != nil && C.pdf_is_name(d.ctx, obj) != 0 {
-				log.Printf("invalid font descriptor subtype")
-				return
-			}
-
-			if C.pdf_name_eq(d.ctx, obj, pdfName(C.PDF_ENUM_NAME_Type1C)) != 0 {
-				ext = "cff"
-			} else if C.pdf_name_eq(d.ctx, obj, pdfName(C.PDF_ENUM_NAME_CIDFontType0C)) != 0 {
-				ext = "cid"
-			} else if C.pdf_name_eq(d.ctx, obj, pdfName(C.PDF_ENUM_NAME_OpenType)) != 0 {
-				ext = "otf"
-			} else {
-				log.Printf("unhandled font type %s", C.GoString(C.pdf_to_name(d.ctx, obj)))
-				return
-			}
-		}
-
-		if stream == nil {
-			return
-		}
-
-		var data *C.uchar
-		buf := C.pdf_load_stream(d.ctx, stream)
-		defer C.fz_drop_buffer(d.ctx, buf)
-
-		buflen := C.fz_buffer_storage(d.ctx, buf, &data)
-		num := C.pdf_to_num(d.ctx, ref)
-
-		fontData := C.GoBytes(unsafe.Pointer(data), C.int(buflen))
-		name := fmt.Sprintf("font-%04d.%s", num, ext)
-
-		fmt.Printf("font %s: %d", name, len(fontData))
-	}
-
-	C.fz_empty_store(d.ctx)
-}
-
-func (d *Document) LoadFonts() {
-	numObj := int(C.pdf_count_objects(d.ctx, d.native))
-	for i := 1; i < numObj; i++ {
-		d.loadFont(i)
-	}
+func (d *Document) GetFontCache() gfx.FontCache {
+	return pointer.Restore(unsafe.Pointer(d.ctx.user)).(*usercontext).fontCache
 }
 
 func (d *Document) NumPages() int {
@@ -158,6 +95,12 @@ func (d *Document) Close() {
 	}
 	d.pages = nil
 	C.pdf_drop_document(d.ctx, d.native)
+
+	if d.ctx.user != nil {
+		pointer.Unref(unsafe.Pointer(d.ctx.user))
+		d.ctx.user = nil
+	}
+
 	C.fz_drop_context(d.ctx)
 }
 
@@ -219,6 +162,7 @@ func newDocumentFromReader(r io.Reader) (*Document, error) {
 
 func newDocumentFromBytes(b []byte) (d *Document, err error) {
 	ctx := C.fzgo_new_context()
+
 	if err != nil {
 		err = ErrCreateContext
 		return
@@ -246,6 +190,10 @@ func newDocumentFromBytes(b []byte) (d *Document, err error) {
 		C.fz_drop_context(ctx)
 		return nil, err
 	}
+
+	userCtx := newusercontext(ctx)
+	userCtx.fontCache.init(ctx, native)
+	ctx.user = pointer.Save(userCtx)
 
 	return newDocument(ctx, native), nil
 }
@@ -286,6 +234,10 @@ func newDocumentFromFile(fileName string) (d *Document, err error) {
 		return nil, err
 	}
 
+	userCtx := newusercontext(ctx)
+	userCtx.fontCache.init(ctx, native)
+
+	ctx.user = pointer.Save(userCtx)
 	return newDocument(ctx, native), nil
 }
 

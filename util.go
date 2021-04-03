@@ -1,20 +1,17 @@
 package fitz
 
 // #include "bridge.h"
-// #include "deps/mupdf/thirdparty/freetype/include/freetype/freetype.h"
 import "C"
 import (
 	"image/color"
-	"io/ioutil"
-	"log"
-	"os"
 	"unsafe"
 
+	"github.com/mattn/go-pointer"
 	"go.matteson.dev/gfx"
 )
 
 func rectFromFitz(rect C.fz_rect) gfx.Rect {
-	return gfx.MakeRectCorners(float64(rect.x0), float64(rect.y0), float64(rect.x1), float64(rect.y1))
+	return gfx.MakeRect(float64(rect.x0), float64(rect.y0), float64(rect.x1), float64(rect.y1))
 }
 
 func matrixFromFitz(trm C.fz_matrix) gfx.Matrix {
@@ -53,9 +50,7 @@ func getStroke(stroke *C.fz_stroke_state) *gfx.Stroke {
 	}
 
 	return &gfx.Stroke{
-		StartCap:   gfx.LineCap(stroke.start_cap),
-		DashCap:    gfx.LineCap(stroke.dash_cap),
-		EndCap:     gfx.LineCap(stroke.end_cap),
+		LineCap:    gfx.LineCap(stroke.start_cap),
 		LineJoin:   gfx.LineJoin(stroke.linejoin),
 		LineWidth:  float64(stroke.linewidth),
 		MiterLimit: float64(stroke.miterlimit),
@@ -89,7 +84,7 @@ func getImage(ctx *C.fz_context, ctm C.fz_matrix, img *C.fz_image, colorParams C
 	bounds := C.fz_transform_rect(C.fz_unit_rect, ctm)
 
 	return &Image{
-		Rect:    gfx.MakeRectCorners(float64(x), float64(y), float64(x+width), float64(y+height)),
+		Rect:    gfx.MakeRect(float64(x), float64(y), float64(x+width), float64(y+height)),
 		Frame:   rectFromFitz(bounds),
 		Data:    data,
 		Stride:  stride,
@@ -98,134 +93,160 @@ func getImage(ctx *C.fz_context, ctm C.fz_matrix, img *C.fz_image, colorParams C
 }
 
 func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col color.Color) (text *Text) {
-	text = &Text{}
+	userCtx := pointer.Restore(unsafe.Pointer(ctx.user)).(*usercontext)
+	text = &Text{FontCache: userCtx.fontCache}
+
 	for span := fztext.head; span != nil; span = span.next {
-		wmode := C.fz_text_span_wmode(span)
-		font := getFontInfo(ctx, span)
-		bbox := C.fz_font_bbox(ctx, span.font)
-
-		spanMat := matrixFromFitz(span.trm)
-		letters := make(gfx.Letters, 0, span.len)
-		quads := make(gfx.Quads, 0, span.len)
-
+		letters := make(Letters, 0, span.len)
 		for i := 0; i < int(span.len); i++ {
 			item := (*C.fz_text_item)(unsafe.Pointer(uintptr(unsafe.Pointer(span.items)) + uintptr(i)*unsafe.Sizeof(*span.items)))
 			if item.ucs == -1 {
 				continue
 			}
 
-			trm := spanMat.Translated(float64(item.x), float64(item.y)).Concat(matrixFromFitz(ctm))
-
-			var adv float64 = 0
-			if item.gid >= 0 {
-				adv = float64(C.fz_advance_glyph(ctx, span.font, item.gid, wmode))
-			}
-
-			var dir, p, q, a, d gfx.Point
-			if wmode == 0 {
-				dir.X, dir.Y = 1, 0
-			} else {
-				dir.X, dir.Y = 0, -1
-			}
-
-			dir = trm.TransformVec(dir)
-			size := trm.Expansion()
-
-			if wmode == 0 {
-				p.X, p.Y = trm.E, trm.F
-				q.X, q.Y = trm.E+adv*dir.X, trm.F+adv*dir.Y
-				a.X, a.Y = 0, float64(C.fz_font_ascender(ctx, span.font))
-				d.X, d.Y = 0, float64(C.fz_font_descender(ctx, span.font))
-			} else {
-				q.X, q.Y = trm.E, trm.F
-				p.X, p.Y = trm.E-adv*dir.X, trm.F-adv*dir.Y
-				a.X, a.Y = float64(bbox.x1), 0
-				d.X, d.Y = float64(bbox.x0), 0
-			}
-
-			a = trm.TransformVec(a)
-			d = trm.TransformVec(d)
-
-			quad := gfx.Quad{
-				BottomLeft:  gfx.Point{X: p.X + d.X, Y: p.Y + d.Y},
-				TopLeft:     gfx.Point{X: p.X + a.X, Y: p.Y + a.Y},
-				BottomRight: gfx.Point{X: q.X + d.X, Y: q.Y + d.Y},
-				TopRight:    gfx.Point{X: q.X + a.X, Y: q.Y + a.Y},
-			}
-
-			mat := C.fz_matrix{C.float(trm.A), C.float(trm.B), C.float(trm.C), C.float(trm.D), C.float(trm.E), C.float(trm.F)}
-
-			gb := C.fz_bound_glyph(ctx, span.font, item.gid, mat)
-			glyphBounds := gfx.MakeRectCorners(
-				float64(gb.x0), float64(gb.y0),
-				float64(gb.x1), float64(gb.y1),
-			)
-			glyphPath := C.fz_outline_glyph(ctx, span.font, item.gid, mat)
-			defer C.fz_drop_path(ctx, glyphPath)
-
-			quad = gfx.RectToQuad(glyphBounds)
-			quads = append(quads, quad)
-
-			letter := gfx.Letter{
-				Rune: rune(item.ucs),
-				Font: font,
-				// GlyphPath:     makePath(ctx, glyphPath),
-				Quad:          quad,
-				Size:          size,
-				Color:         col,
-				StartBaseline: p,
-				EndBaseline:   q,
-				// GlyphBounds:   glyphBounds,
-			}
-
-			letters = append(letters, letter)
+			letters = append(letters, Letter{
+				Rune:    rune(item.ucs),
+				GlyphID: int(item.gid),
+				Origin:  gfx.MakePoint(float64(item.x), float64(item.y)),
+			})
 		}
 
-		sp := &TextSpan{
-			FontData: font,
-			WMode:    int(wmode),
-			Letters:  letters,
-			Quad:     quads.Union(),
-		}
-
-		text.Spans = append(text.Spans, sp)
+		text.Spans = append(text.Spans, &TextSpan{
+			Font:    getFont(ctx, span.font),
+			WMode:   int(C.fz_text_span_wmode(span)),
+			Letters: letters,
+			Matrix:  matrixFromFitz(span.trm),
+		})
 	}
 	return
 }
 
-func getFontInfo(ctx *C.fz_context, span *C.fz_text_span) (font *gfx.FontData) {
+// func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col color.Color) (text *Text) {
+// 	userCtx := pointer.Restore(unsafe.Pointer(ctx.user)).(*usercontext)
+// 	text = &Text{FontCache: userCtx.fontCache}
+
+// 	for span := fztext.head; span != nil; span = span.next {
+// 		wmode := C.fz_text_span_wmode(span)
+// 		fontData := getFontData(ctx, span)
+// 		bbox := C.fz_font_bbox(ctx, span.font)
+
+// 		spanMat := matrixFromFitz(span.trm)
+// 		letters := make(gfx.Letters, 0, span.len)
+// 		quads := make(gfx.Quads, 0, span.len)
+
+// 		for i := 0; i < int(span.len); i++ {
+// 			item := (*C.fz_text_item)(unsafe.Pointer(uintptr(unsafe.Pointer(span.items)) + uintptr(i)*unsafe.Sizeof(*span.items)))
+// 			if item.ucs == -1 {
+// 				continue
+// 			}
+
+// 			trm := spanMat.Translated(float64(item.x), float64(item.y)).Concat(matrixFromFitz(ctm))
+
+// 			var adv float64 = 0
+// 			if item.gid >= 0 {
+// 				adv = float64(C.fz_advance_glyph(ctx, span.font, item.gid, wmode))
+// 			}
+
+// 			var dir, p, q, a, d gfx.Point
+// 			if wmode == 0 {
+// 				dir.X, dir.Y = 1, 0
+// 			} else {
+// 				dir.X, dir.Y = 0, -1
+// 			}
+
+// 			dir = trm.TransformVec(dir)
+// 			size := trm.Expansion()
+
+// 			if wmode == 0 {
+// 				p.X, p.Y = trm.E, trm.F
+// 				q.X, q.Y = trm.E+adv*dir.X, trm.F+adv*dir.Y
+// 				a.X, a.Y = 0, float64(C.fz_font_ascender(ctx, span.font))
+// 				d.X, d.Y = 0, float64(C.fz_font_descender(ctx, span.font))
+// 			} else {
+// 				q.X, q.Y = trm.E, trm.F
+// 				p.X, p.Y = trm.E-adv*dir.X, trm.F-adv*dir.Y
+// 				a.X, a.Y = float64(bbox.x1), 0
+// 				d.X, d.Y = float64(bbox.x0), 0
+// 			}
+
+// 			a = trm.TransformVec(a)
+// 			d = trm.TransformVec(d)
+
+// 			quad := gfx.Quad{
+// 				BottomLeft:  gfx.Point{X: p.X + d.X, Y: p.Y + d.Y},
+// 				TopLeft:     gfx.Point{X: p.X + a.X, Y: p.Y + a.Y},
+// 				BottomRight: gfx.Point{X: q.X + d.X, Y: q.Y + d.Y},
+// 				TopRight:    gfx.Point{X: q.X + a.X, Y: q.Y + a.Y},
+// 			}
+
+// 			mat := C.fz_matrix{C.float(trm.A), C.float(trm.B), C.float(trm.C), C.float(trm.D), C.float(trm.E), C.float(trm.F)}
+
+// 			gb := C.fz_bound_glyph(ctx, span.font, item.gid, mat)
+// 			glyphBounds := gfx.MakeRect(
+// 				float64(gb.x0), float64(gb.y0),
+// 				float64(gb.x1), float64(gb.y1),
+// 			)
+// 			glyphPath := C.fz_outline_glyph(ctx, span.font, item.gid, mat)
+// 			defer C.fz_drop_path(ctx, glyphPath)
+
+// 			quad = glyphBounds.Quad()
+// 			quads = append(quads, quad)
+
+// 			letter := gfx.Letter{
+// 				Rune:          rune(item.ucs),
+// 				GlyphID:       int(item.gid),
+// 				Font:          &fontData,
+// 				GlyphPath:     makePath(ctx, glyphPath),
+// 				Quad:          quad,
+// 				FontSize:      size,
+// 				Color:         col,
+// 				StartBaseline: p,
+// 				EndBaseline:   q,
+// 			}
+
+// 			letters = append(letters, letter)
+// 		}
+
+// 		sp := &TextSpan{
+// 			FontData: &fontData,
+// 			WMode:    int(wmode),
+// 			Letters:  letters,
+// 			Matrix:   spanMat,
+// 			Quad:     quads.Union(),
+// 		}
+
+// 		text.Spans = append(text.Spans, sp)
+// 	}
+// 	return
+// }
+
+func getFont(ctx *C.fz_context, fzfont *C.fz_font) gfx.Font {
 	fontFamily := gfx.FontFamilySans
-	if C.fz_font_is_serif(ctx, span.font) != 0 {
+	if C.fz_font_is_serif(ctx, fzfont) != 0 {
 		fontFamily = gfx.FontFamilySerif
-	} else if C.fz_font_is_monospaced(ctx, span.font) != 0 {
+	} else if C.fz_font_is_monospaced(ctx, fzfont) != 0 {
 		fontFamily = gfx.FontFamilyMono
 	}
 	fontStyle := gfx.FontStyleNormal
-	if C.fz_font_is_bold(ctx, span.font) != 0 {
+	if C.fz_font_is_bold(ctx, fzfont) != 0 {
 		fontStyle |= gfx.FontStyleBold
-	} else if C.fz_font_is_italic(ctx, span.font) != 0 {
+	} else if C.fz_font_is_italic(ctx, fzfont) != 0 {
 		fontStyle |= gfx.FontStyleItalic
 	}
 
-	fontName := C.GoString(C.fz_font_name(ctx, span.font))
-	font = &gfx.FontData{
+	fontName := C.GoString(C.fz_font_name(ctx, fzfont))
+	fontData := gfx.FontData{
 		Name:   fontName,
 		Family: fontFamily,
 		Style:  fontStyle,
 	}
 
-	cache := gfx.GetGlobalFontCache()
-	if !cache.Has(*font) {
-		data := C.GoBytes(unsafe.Pointer(span.font.buffer.data), C.int(span.font.buffer.len))
-		var face C.FT_Face = (C.FT_Face)(span.font.ft_face)
-		famName := C.GoString(face.family_name)
-		styleName := C.GoString(face.style_name)
-		_, _ = famName, styleName
-		ioutil.WriteFile("/Users/bryan/Desktop/font.ttf", data, os.ModePerm)
-		if err := cache.Store(*font, data); err != nil {
-			log.Printf("%v", err)
-		}
+	userCtx := pointer.Restore(unsafe.Pointer(ctx.user)).(*usercontext)
+	font, _ := userCtx.fontCache.Load(fontData)
+	if font == nil {
+		font = newfitzfont(ctx, fzfont)
+		userCtx.fontCache.Store(font)
 	}
 
-	return
+	return font
 }
