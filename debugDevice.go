@@ -15,7 +15,7 @@ type DebugDevice struct {
 	transform gfx.Matrix
 }
 
-func NewDebugDevice(transform gfx.Matrix, dest *image.RGBA) GoDevice {
+func NewDebugDevice(transform gfx.Matrix, dest *image.RGBA) Device {
 	ctx := gfx.NewImageContext(dest)
 	ctx.Clear()
 	return &DebugDevice{image: dest, context: ctx, transform: transform}

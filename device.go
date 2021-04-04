@@ -7,31 +7,34 @@ import (
 	"go.matteson.dev/gfx"
 )
 
-type GoDevice interface {
-	ShouldCall(CommandKind) bool
+type Handler struct {
+}
 
-	FillPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.Matrix, color color.Color)
-	StrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.Matrix, color color.Color)
-	FillShade(shade *gfx.Shader, ctm gfx.Matrix, alpha float64)
-	FillImage(image *Image, ctm gfx.Matrix, alpha float64)
-	FillImageMask(image *Image, ctm gfx.Matrix, color color.Color)
-	ClipPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.Matrix, scissor gfx.Rect)
-	ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.Matrix, scissor gfx.Rect)
-	ClipImageMask(image *Image, ctm gfx.Matrix, scissor gfx.Rect)
-	FillText(text *Text, ctm gfx.Matrix, color color.Color)
-	StrokeText(text *Text, stroke *gfx.Stroke, ctm gfx.Matrix, color color.Color)
-	ClipText(text *Text, ctm gfx.Matrix, scissor gfx.Rect)
-	ClipStrokeText(text *Text, stroke *gfx.Stroke, ctm gfx.Matrix, scissor gfx.Rect)
-	IgnoreText(text *Text, ctm gfx.Matrix)
-	PopClip()
-	BeginMask(rect gfx.Rect, color color.Color, luminosity int)
-	EndMask()
-	BeginGroup(rect gfx.Rect, cs *gfx.Colorspace, isolated bool, knockout bool, blendmode gfx.BlendMode, alpha float64)
-	EndGroup()
-	BeginTile() int
-	EndTile()
-	BeginLayer(layerName string)
-	EndLayer()
+type Device interface {
+	FillPathHandler
+	StrokePathHandler
+	FillShadeHandler
+	FillImageHandler
+	FillImageMaskHandler
+	ClipPathHandler
+	ClipStrokePathHandler
+	ClipImageMaskHandler
+	FillTextHandler
+	StrokeTextHandler
+	ClipTextHandler
+	ClipStrokeTextHandler
+	IgnoreTextHandler
+	PopClipHandler
+	BeginMaskHandler
+	EndMaskHandler
+	BeginGroupHandler
+	EndGroupHandler
+	BeginTileHandler
+	EndTileHandler
+	BeginLayerHandler
+	EndLayerHandler
+
+	ShouldCall(CommandKind) bool
 	Close()
 }
 
@@ -81,15 +84,15 @@ func (dev *BaseDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix
 }
 
 func (dev *BaseDevice) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {}
-func (dev *BaseDevice) FillText(txt *Text, matrix gfx.Matrix, color color.Color)        {}
-func (dev *BaseDevice) StrokeText(txt *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color) {
+func (dev *BaseDevice) FillText(text *Text, matrix gfx.Matrix, color color.Color)       {}
+func (dev *BaseDevice) StrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color) {
 }
 
-func (dev *BaseDevice) ClipText(txt *Text, matrix gfx.Matrix, scissor gfx.Rect) {}
-func (dev *BaseDevice) ClipStrokeText(txt *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *BaseDevice) ClipText(text *Text, matrix gfx.Matrix, scissor gfx.Rect) {}
+func (dev *BaseDevice) ClipStrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *BaseDevice) IgnoreText(txt *Text, matrix gfx.Matrix)                    {}
+func (dev *BaseDevice) IgnoreText(text *Text, matrix gfx.Matrix)                   {}
 func (dev *BaseDevice) PopClip()                                                   {}
 func (dev *BaseDevice) BeginMask(rect gfx.Rect, color color.Color, luminosity int) {}
 func (dev *BaseDevice) EndMask()                                                   {}
@@ -191,3 +194,172 @@ func (k CommandKind) String() string {
 
 	return strings.Join(kinds, " ")
 }
+
+type FillPathHandler interface {
+	FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color)
+}
+
+type FillPathHandlerFunc func(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color)
+
+func (fn FillPathHandlerFunc) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color) {
+	fn(path, fillRule, matrix, fillColor)
+}
+
+type StrokePathHandler interface {
+	StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color)
+}
+type StrokePathHandlerFunc func(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color)
+
+func (fn StrokePathHandlerFunc) StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color) {
+	fn(path, stroke, matrix, strokeColor)
+}
+
+type FillShadeHandler interface {
+	FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64)
+}
+type FillShadeHandlerFunc func(shade *gfx.Shader, matrix gfx.Matrix, alpha float64)
+
+func (fn FillShadeHandlerFunc) FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64) {
+	fn(shade, matrix, alpha)
+}
+
+type FillImageHandler interface {
+	FillImage(image *Image, matrix gfx.Matrix, alpha float64)
+}
+type FillImageHandlerFunc func(image *Image, matrix gfx.Matrix, alpha float64)
+
+func (fn FillImageHandlerFunc) FillImage(image *Image, matrix gfx.Matrix, alpha float64) {
+	fn(image, matrix, alpha)
+}
+
+type FillImageMaskHandler interface {
+	FillImageMask(image *Image, matrix gfx.Matrix, color color.Color)
+}
+
+type FillImageMaskHandlerFunc func(image *Image, matrix gfx.Matrix, color color.Color)
+
+func (fn FillImageMaskHandlerFunc) FillImageMask(image *Image, matrix gfx.Matrix, color color.Color) {
+	fn(image, matrix, color)
+}
+
+type ClipPathHandler interface {
+	ClipPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect)
+}
+type ClipPathHandlerFunc func(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect)
+
+func (fn ClipPathHandlerFunc) ClipPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
+	fn(path, fillRule, matrix, scissor)
+}
+
+type ClipStrokePathHandler interface {
+	ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect)
+}
+type ClipStrokePathHandlerFunc func(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect)
+
+func (fn ClipStrokePathHandlerFunc) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
+	fn(path, stroke, matrix, scissor)
+}
+
+type ClipImageMaskHandler interface {
+	ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect)
+}
+type ClipImageMaskHandlerFunc func(image *Image, matrix gfx.Matrix, scissor gfx.Rect)
+
+func (fn ClipImageMaskHandlerFunc) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {
+	fn(image, matrix, scissor)
+}
+
+type FillTextHandler interface {
+	FillText(text *Text, matrix gfx.Matrix, color color.Color)
+}
+type FillTextHandlerFunc func(text *Text, matrix gfx.Matrix, color color.Color)
+
+func (fn FillTextHandlerFunc) FillText(text *Text, matrix gfx.Matrix, color color.Color) {
+	fn(text, matrix, color)
+}
+
+type StrokeTextHandler interface {
+	StrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color)
+}
+type StrokeTextHandlerFunc func(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color)
+
+func (fn StrokeTextHandlerFunc) StrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color) {
+	fn(text, stroke, matrix, color)
+}
+
+type ClipTextHandler interface {
+	ClipText(text *Text, matrix gfx.Matrix, scissor gfx.Rect)
+}
+type ClipTextHandlerFunc func(text *Text, matrix gfx.Matrix, scissor gfx.Rect)
+
+func (fn ClipTextHandlerFunc) ClipText(text *Text, matrix gfx.Matrix, scissor gfx.Rect) {
+	fn(text, matrix, scissor)
+}
+
+type ClipStrokeTextHandler interface {
+	ClipStrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect)
+}
+type ClipStrokeTextHandlerFunc func(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect)
+
+func (fn ClipStrokeTextHandlerFunc) ClipStrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
+	fn(text, stroke, matrix, scissor)
+}
+
+type IgnoreTextHandler interface {
+	IgnoreText(text *Text, matrix gfx.Matrix)
+}
+type IgnoreTextHandlerFunc func(text *Text, matrix gfx.Matrix)
+
+func (fn IgnoreTextHandlerFunc) IgnoreText(text *Text, matrix gfx.Matrix) { fn(text, matrix) }
+
+type PopClipHandler interface{ PopClip() }
+type PopClipHandlerFunc func()
+
+func (fn PopClipHandlerFunc) PopClip() { fn() }
+
+type BeginMaskHandler interface {
+	BeginMask(rect gfx.Rect, color color.Color, luminosity int)
+}
+type BeginMaskHandlerFunc func(rect gfx.Rect, color color.Color, luminosity int)
+type EndMaskHandler interface{ EndMask() }
+type EndMaskHandlerFunc func()
+
+func (fn BeginMaskHandlerFunc) BeginMask(rect gfx.Rect, color color.Color, luminosity int) {
+	fn(rect, color, luminosity)
+}
+
+func (fn EndMaskHandlerFunc) EndMask() { fn() }
+
+type BeginGroupHandler interface {
+	BeginGroup(rect gfx.Rect, cs *gfx.Colorspace, isolated bool, knockout bool, blendmode gfx.BlendMode, alpha float64)
+}
+type BeginGroupHandlerFunc func(rect gfx.Rect, cs *gfx.Colorspace, isolated bool, knockout bool, blendmode gfx.BlendMode, alpha float64)
+
+func (fn BeginGroupHandlerFunc) BeginGroup(rect gfx.Rect, cs *gfx.Colorspace, isolated bool, knockout bool, blendmode gfx.BlendMode, alpha float64) {
+	fn(rect, cs, isolated, knockout, blendmode, alpha)
+}
+
+type EndGroupHandler interface{ EndGroup() }
+type EndGroupHandlerFunc func()
+
+func (fn EndGroupHandlerFunc) EndGroup() { fn() }
+
+type BeginTileHandler interface{ BeginTile() int }
+type BeginTileHandlerFunc func() int
+
+func (fn BeginTileHandlerFunc) BeginTile() int { return fn() }
+
+type EndTileHandler interface{ EndTile() }
+type EndTileHandlerFunc func()
+
+func (fn EndTileHandlerFunc) EndTile() { fn() }
+
+type BeginLayerHandler interface{ BeginLayer(layerName string) }
+type BeginLayerHandlerFunc func(layerName string)
+
+func (fn BeginLayerHandlerFunc) BeginLayer(layerName string) { fn(layerName) }
+
+type EndLayerHandler interface{ EndLayer() }
+type EndLayerHandlerFunc func()
+
+func (fn EndLayerHandlerFunc) EndLayer() { fn() }

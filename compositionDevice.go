@@ -8,10 +8,10 @@ import (
 
 type CompositionDevice struct {
 	BaseDevice
-	devices []GoDevice
+	devices []Device
 }
 
-func NewCompositionCropper(devices ...GoDevice) GoDevice {
+func NewCompositionCropper(devices ...Device) Device {
 	return &CompositionDevice{devices: devices}
 }
 

@@ -87,7 +87,7 @@ func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err
 	return img, nil
 }
 
-func (p *Page) RunDevice(device GoDevice) {
+func (p *Page) RunDevice(device Device) {
 	ref := pointer.Save(device)
 	defer pointer.Unref(ref)
 

@@ -14,7 +14,7 @@ type DrawDevice struct {
 	transform gfx.Matrix
 }
 
-func NewDrawDevice(transform gfx.Matrix, dest *image.RGBA) GoDevice {
+func NewDrawDevice(transform gfx.Matrix, dest *image.RGBA) Device {
 	ctx := gfx.NewImageContext(dest)
 	ctx.Clear()
 	return &DrawDevice{image: dest, context: ctx, transform: transform}

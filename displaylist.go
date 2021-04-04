@@ -9,7 +9,7 @@ type DisplayList struct {
 	Commands   []GraphicsCommand
 }
 
-func (list *DisplayList) Apply(device GoDevice) {
+func (list *DisplayList) Apply(device Device) {
 	for _, command := range list.Commands {
 		if !device.ShouldCall(command.Kind()) {
 			continue

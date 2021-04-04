@@ -11,7 +11,7 @@ type ListDevice struct {
 	displayList *DisplayList
 }
 
-func NewListDevice(displayList *DisplayList) GoDevice {
+func NewListDevice(displayList *DisplayList) Device {
 	return &ListDevice{
 		displayList: displayList,
 	}
