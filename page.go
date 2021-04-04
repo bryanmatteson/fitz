@@ -87,7 +87,7 @@ func (p *Page) RenderImage(region gfx.Rect, scale float64) (img *image.RGBA, err
 	return img, nil
 }
 
-func (p *Page) RunDevice(device Device) {
+func (p *Page) RunDevice(device Device) error {
 	ref := pointer.Save(device)
 	defer pointer.Unref(ref)
 
@@ -96,6 +96,12 @@ func (p *Page) RunDevice(device Device) {
 
 	C.fz_run_display_list(p.ctx, p.list, fzdev, C.fz_identity, C.fz_infinite_rect, nil)
 	C.fz_close_device(p.ctx, fzdev)
+
+	if device.Error() != nil && device.Error() == ErrBreak {
+		return nil
+	}
+
+	return device.Error()
 }
 
 // RenderSVG returns svg document for given page number.
