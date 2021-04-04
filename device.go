@@ -103,13 +103,13 @@ func (dev *BaseDevice) BeginLayer(layerName string) {}
 func (dev *BaseDevice) EndLayer()                   {}
 func (dev *BaseDevice) Close()                      {}
 
-type BreakDevice struct {
+type LoopDevice struct {
 	Device
 	done bool
 }
 
-func (dev *BreakDevice) Break()                       { dev.done = true }
-func (dev *BreakDevice) Should(kind CommandKind) bool { return !dev.done }
+func (dev *LoopDevice) Break()                       { dev.done = true }
+func (dev *LoopDevice) Should(kind CommandKind) bool { return !dev.done }
 
 type CompositeDevice struct {
 	devices []Device
