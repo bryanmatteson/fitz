@@ -29,7 +29,7 @@ func TestDocumentFont(t *testing.T) {
 	bounds := trm.TransformRect(pg.Bounds())
 	img := image.NewRGBA(bounds.ImageRect())
 
-	pg.RunDevice(fitz.NewDebugDevice(gfx.NewScaleMatrix(3, 3), img))
+	pg.RunDevice(fitz.NewDrawDevice(gfx.NewScaleMatrix(3, 3), img))
 
 	var buf bytes.Buffer
 	png.Encode(&buf, img)

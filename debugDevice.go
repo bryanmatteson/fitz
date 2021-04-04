@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/lucasb-eyer/go-colorful"
 	"go.matteson.dev/gfx"
 )
 
@@ -58,20 +59,18 @@ func (dev *DebugDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm g
 func (dev *DebugDevice) ClipImageMask(image *Image, ctm gfx.Matrix, scissor gfx.Rect) {}
 
 func (dev *DebugDevice) FillText(text *Text, ctm gfx.Matrix, fillColor color.Color) {
-	dev.context.SetTransformationMatrix(gfx.IdentityMatrix)
+	dev.context.SetTransformationMatrix(ctm.Concat(dev.transform))
 	dev.context.SetFillColor(fillColor)
 
 	for _, span := range text.Spans {
 		for _, letter := range span.Letters {
-			glyph := span.Font.Glyph(letter.Rune, span.Matrix.Translated(letter.Origin.X, letter.Origin.Y).Compose(ctm, dev.transform))
+			glyph := span.Font.Glyph(letter.Rune, span.Matrix.Translated(letter.Origin.X, letter.Origin.Y))
 			dev.context.Fill(glyph.Path)
 		}
-		q := ctm.Concat(dev.transform).TransformQuad(span.Quad)
-		dev.context.SetStrokeColor(color.RGBA{R: 255, A: 255})
-		dev.context.DrawQuad(q)
+		dev.context.SetStrokeColor(colorful.FastHappyColor())
+		dev.context.DrawQuad(span.Quad)
 		dev.context.Stroke()
 	}
-
 }
 
 func (dev *DebugDevice) StrokeText(text *Text, stroke *gfx.Stroke, ctm gfx.Matrix, color color.Color) {
@@ -82,7 +81,7 @@ func (dev *DebugDevice) StrokeText(text *Text, stroke *gfx.Stroke, ctm gfx.Matri
 
 	for _, span := range text.Spans {
 		for _, letter := range span.Letters {
-			glyph := span.Font.Glyph(letter.Rune, span.Matrix.Translated(letter.Origin.X, letter.Origin.Y).Compose(ctm, dev.transform))
+			glyph := span.Font.Glyph(letter.Rune, span.Matrix.Translated(letter.Origin.X, letter.Origin.Y))
 			dev.context.Stroke(glyph.Path)
 		}
 	}
