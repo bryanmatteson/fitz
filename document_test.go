@@ -55,7 +55,7 @@ func TestDocumentSplit(t *testing.T) {
 }
 
 func TestDocumentMemory(t *testing.T) {
-	uri, err := url.Parse("/Volumes/SamT5/reports")
+	uri, err := url.Parse("/Volumes/SamT5/ml/reports")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,6 +70,7 @@ func TestDocumentMemory(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
 		for i := 0; i < doc.NumPages(); i++ {
 			pg, _ := doc.LoadPage(i)
 			pg.RenderImage(pg.Bounds(), 5)

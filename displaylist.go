@@ -60,8 +60,6 @@ func (list *DisplayList) Apply(device Device) error {
 			device.EndLayer()
 		case (*closecmd):
 			device.Close()
-		case (*dropcmd):
-			device.Drop()
 		default:
 			panic(fmt.Sprintf("unknown command in display list: %v\n", cmd))
 		}
