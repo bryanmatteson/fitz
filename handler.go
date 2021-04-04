@@ -6,7 +6,7 @@ import (
 	"go.matteson.dev/gfx"
 )
 
-type Handler Device
+type Handler interface{}
 
 type HandlerDevice struct {
 	BaseDevice
