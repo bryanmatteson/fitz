@@ -7,9 +7,6 @@ import (
 	"go.matteson.dev/gfx"
 )
 
-type Handler struct {
-}
-
 type Device interface {
 	FillPathHandler
 	StrokePathHandler

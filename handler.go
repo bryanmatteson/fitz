@@ -6,82 +6,86 @@ import (
 	"go.matteson.dev/gfx"
 )
 
+type HandlerFunc interface{}
+
 type HandlerDevice struct {
 	BaseDevice
-	fillPathHandlers       []FillPathHandler
-	strokePathHandlers     []StrokePathHandler
-	fillShadeHandlers      []FillShadeHandler
-	fillImageHandlers      []FillImageHandler
-	fillImageMaskHandlers  []FillImageMaskHandler
-	clipPathHandlers       []ClipPathHandler
-	clipStrokePathHandlers []ClipStrokePathHandler
-	clipImageMaskHandlers  []ClipImageMaskHandler
-	fillTextHandlers       []FillTextHandler
-	strokeTextHandlers     []StrokeTextHandler
-	clipTextHandlers       []ClipTextHandler
-	clipStrokeTextHandlers []ClipStrokeTextHandler
-	ignoreTextHandlers     []IgnoreTextHandler
-	popClipHandlers        []PopClipHandler
-	beginMaskHandlers      []BeginMaskHandler
-	endMaskHandlers        []EndMaskHandler
-	beginGroupHandlers     []BeginGroupHandler
-	endGroupHandlers       []EndGroupHandler
-	beginTileHandlers      []BeginTileHandler
-	endTileHandlers        []EndTileHandler
-	beginLayerHandlers     []BeginLayerHandler
-	endLayerHandlers       []EndLayerHandler
-	closeHandlers          []CloseHandler
+	fillPathHandlers       []FillPathHandlerFunc
+	strokePathHandlers     []StrokePathHandlerFunc
+	fillShadeHandlers      []FillShadeHandlerFunc
+	fillImageHandlers      []FillImageHandlerFunc
+	fillImageMaskHandlers  []FillImageMaskHandlerFunc
+	clipPathHandlers       []ClipPathHandlerFunc
+	clipStrokePathHandlers []ClipStrokePathHandlerFunc
+	clipImageMaskHandlers  []ClipImageMaskHandlerFunc
+	fillTextHandlers       []FillTextHandlerFunc
+	strokeTextHandlers     []StrokeTextHandlerFunc
+	clipTextHandlers       []ClipTextHandlerFunc
+	clipStrokeTextHandlers []ClipStrokeTextHandlerFunc
+	ignoreTextHandlers     []IgnoreTextHandlerFunc
+	popClipHandlers        []PopClipHandlerFunc
+	beginMaskHandlers      []BeginMaskHandlerFunc
+	endMaskHandlers        []EndMaskHandlerFunc
+	beginGroupHandlers     []BeginGroupHandlerFunc
+	endGroupHandlers       []EndGroupHandlerFunc
+	beginTileHandlers      []BeginTileHandlerFunc
+	endTileHandlers        []EndTileHandlerFunc
+	beginLayerHandlers     []BeginLayerHandlerFunc
+	endLayerHandlers       []EndLayerHandlerFunc
+	closeHandlers          []CloseHandlerFunc
 }
 
-func (dev *HandlerDevice) AddHandler(handlers ...interface{}) {
+func (dev *HandlerDevice) AddHandler(handlers ...HandlerFunc) {
 	for _, handler := range handlers {
 		switch h := handler.(type) {
-		case FillPathHandler:
+		case FillPathHandlerFunc:
 			dev.fillPathHandlers = append(dev.fillPathHandlers, h)
-		case StrokePathHandler:
+		case StrokePathHandlerFunc:
 			dev.strokePathHandlers = append(dev.strokePathHandlers, h)
-		case FillShadeHandler:
+		case FillShadeHandlerFunc:
 			dev.fillShadeHandlers = append(dev.fillShadeHandlers, h)
-		case FillImageHandler:
+		case FillImageHandlerFunc:
 			dev.fillImageHandlers = append(dev.fillImageHandlers, h)
-		case FillImageMaskHandler:
+		case FillImageMaskHandlerFunc:
 			dev.fillImageMaskHandlers = append(dev.fillImageMaskHandlers, h)
-		case ClipPathHandler:
+		case ClipPathHandlerFunc:
 			dev.clipPathHandlers = append(dev.clipPathHandlers, h)
-		case ClipStrokePathHandler:
+		case ClipStrokePathHandlerFunc:
 			dev.clipStrokePathHandlers = append(dev.clipStrokePathHandlers, h)
-		case ClipImageMaskHandler:
+		case ClipImageMaskHandlerFunc:
 			dev.clipImageMaskHandlers = append(dev.clipImageMaskHandlers, h)
-		case FillTextHandler:
+		case FillTextHandlerFunc:
 			dev.fillTextHandlers = append(dev.fillTextHandlers, h)
-		case StrokeTextHandler:
+		case StrokeTextHandlerFunc:
 			dev.strokeTextHandlers = append(dev.strokeTextHandlers, h)
-		case ClipTextHandler:
+		case ClipTextHandlerFunc:
 			dev.clipTextHandlers = append(dev.clipTextHandlers, h)
-		case ClipStrokeTextHandler:
+		case ClipStrokeTextHandlerFunc:
 			dev.clipStrokeTextHandlers = append(dev.clipStrokeTextHandlers, h)
-		case IgnoreTextHandler:
+		case IgnoreTextHandlerFunc:
 			dev.ignoreTextHandlers = append(dev.ignoreTextHandlers, h)
-		case PopClipHandler:
+		case PopClipHandlerFunc:
 			dev.popClipHandlers = append(dev.popClipHandlers, h)
-		case BeginMaskHandler:
+		case BeginMaskHandlerFunc:
 			dev.beginMaskHandlers = append(dev.beginMaskHandlers, h)
-		case EndMaskHandler:
+		case EndMaskHandlerFunc:
 			dev.endMaskHandlers = append(dev.endMaskHandlers, h)
-		case BeginGroupHandler:
+		case BeginGroupHandlerFunc:
 			dev.beginGroupHandlers = append(dev.beginGroupHandlers, h)
-		case EndGroupHandler:
+		case EndGroupHandlerFunc:
 			dev.endGroupHandlers = append(dev.endGroupHandlers, h)
-		case BeginTileHandler:
+		case BeginTileHandlerFunc:
 			dev.beginTileHandlers = append(dev.beginTileHandlers, h)
-		case EndTileHandler:
+		case EndTileHandlerFunc:
 			dev.endTileHandlers = append(dev.endTileHandlers, h)
-		case BeginLayerHandler:
+		case BeginLayerHandlerFunc:
 			dev.beginLayerHandlers = append(dev.beginLayerHandlers, h)
-		case EndLayerHandler:
+		case EndLayerHandlerFunc:
 			dev.endLayerHandlers = append(dev.endLayerHandlers, h)
-		case CloseHandler:
+		case CloseHandlerFunc:
 			dev.closeHandlers = append(dev.closeHandlers, h)
+		default:
+			panic("unknown handler, must be a handler func")
 		}
 	}
 }
