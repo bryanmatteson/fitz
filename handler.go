@@ -37,55 +37,74 @@ type HandlerDevice struct {
 
 func (dev *HandlerDevice) AddHandler(handlers ...HandlerFunc) {
 	for _, handler := range handlers {
-		switch h := handler.(type) {
-		case FillPathHandler:
+		if h, ok := handler.(FillPathHandler); ok {
 			dev.fillPathHandlers = append(dev.fillPathHandlers, h)
-		case StrokePathHandler:
+		}
+		if h, ok := handler.(StrokePathHandler); ok {
 			dev.strokePathHandlers = append(dev.strokePathHandlers, h)
-		case FillShadeHandler:
+		}
+		if h, ok := handler.(FillShadeHandler); ok {
 			dev.fillShadeHandlers = append(dev.fillShadeHandlers, h)
-		case FillImageHandler:
+		}
+		if h, ok := handler.(FillImageHandler); ok {
 			dev.fillImageHandlers = append(dev.fillImageHandlers, h)
-		case FillImageMaskHandler:
+		}
+		if h, ok := handler.(FillImageMaskHandler); ok {
 			dev.fillImageMaskHandlers = append(dev.fillImageMaskHandlers, h)
-		case ClipPathHandler:
+		}
+		if h, ok := handler.(ClipPathHandler); ok {
 			dev.clipPathHandlers = append(dev.clipPathHandlers, h)
-		case ClipStrokePathHandler:
+		}
+		if h, ok := handler.(ClipStrokePathHandler); ok {
 			dev.clipStrokePathHandlers = append(dev.clipStrokePathHandlers, h)
-		case ClipImageMaskHandler:
+		}
+		if h, ok := handler.(ClipImageMaskHandler); ok {
 			dev.clipImageMaskHandlers = append(dev.clipImageMaskHandlers, h)
-		case FillTextHandler:
+		}
+		if h, ok := handler.(FillTextHandler); ok {
 			dev.fillTextHandlers = append(dev.fillTextHandlers, h)
-		case StrokeTextHandler:
+		}
+		if h, ok := handler.(StrokeTextHandler); ok {
 			dev.strokeTextHandlers = append(dev.strokeTextHandlers, h)
-		case ClipTextHandler:
+		}
+		if h, ok := handler.(ClipTextHandler); ok {
 			dev.clipTextHandlers = append(dev.clipTextHandlers, h)
-		case ClipStrokeTextHandler:
+		}
+		if h, ok := handler.(ClipStrokeTextHandler); ok {
 			dev.clipStrokeTextHandlers = append(dev.clipStrokeTextHandlers, h)
-		case IgnoreTextHandler:
+		}
+		if h, ok := handler.(IgnoreTextHandler); ok {
 			dev.ignoreTextHandlers = append(dev.ignoreTextHandlers, h)
-		case PopClipHandler:
+		}
+		if h, ok := handler.(PopClipHandler); ok {
 			dev.popClipHandlers = append(dev.popClipHandlers, h)
-		case BeginMaskHandler:
+		}
+		if h, ok := handler.(BeginMaskHandler); ok {
 			dev.beginMaskHandlers = append(dev.beginMaskHandlers, h)
-		case EndMaskHandler:
+		}
+		if h, ok := handler.(EndMaskHandler); ok {
 			dev.endMaskHandlers = append(dev.endMaskHandlers, h)
-		case BeginGroupHandler:
+		}
+		if h, ok := handler.(BeginGroupHandler); ok {
 			dev.beginGroupHandlers = append(dev.beginGroupHandlers, h)
-		case EndGroupHandler:
+		}
+		if h, ok := handler.(EndGroupHandler); ok {
 			dev.endGroupHandlers = append(dev.endGroupHandlers, h)
-		case BeginTileHandler:
+		}
+		if h, ok := handler.(BeginTileHandler); ok {
 			dev.beginTileHandlers = append(dev.beginTileHandlers, h)
-		case EndTileHandler:
+		}
+		if h, ok := handler.(EndTileHandler); ok {
 			dev.endTileHandlers = append(dev.endTileHandlers, h)
-		case BeginLayerHandler:
+		}
+		if h, ok := handler.(BeginLayerHandler); ok {
 			dev.beginLayerHandlers = append(dev.beginLayerHandlers, h)
-		case EndLayerHandler:
+		}
+		if h, ok := handler.(EndLayerHandler); ok {
 			dev.endLayerHandlers = append(dev.endLayerHandlers, h)
-		case CloseHandler:
+		}
+		if h, ok := handler.(CloseHandler); ok {
 			dev.closeHandlers = append(dev.closeHandlers, h)
-		default:
-			panic("unknown handler, must be a handler")
 		}
 	}
 }
