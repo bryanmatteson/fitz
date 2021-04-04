@@ -9,7 +9,7 @@ import (
 )
 
 type DebugDevice struct {
-	BaseDevice
+	NullDevice
 	image     image.Image
 	context   *gfx.ImageContext
 	transform gfx.Matrix
@@ -102,4 +102,4 @@ func (dev *DebugDevice) BeginTile() int              { return 0 }
 func (dev *DebugDevice) EndTile()                    {}
 func (dev *DebugDevice) BeginLayer(layerName string) {}
 func (dev *DebugDevice) EndLayer()                   {}
-func (dev *DebugDevice) Close()                      {}
+func (dev *DebugDevice) Done()                       {}

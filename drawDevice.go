@@ -8,7 +8,6 @@ import (
 )
 
 type DrawDevice struct {
-	BaseDevice
 	image     image.Image
 	context   *gfx.ImageContext
 	transform gfx.Matrix
@@ -98,4 +97,4 @@ func (dev *DrawDevice) BeginTile() int              { return 0 }
 func (dev *DrawDevice) EndTile()                    {}
 func (dev *DrawDevice) BeginLayer(layerName string) {}
 func (dev *DrawDevice) EndLayer()                   {}
-func (dev *DrawDevice) Close()                      {}
+func (dev *DrawDevice) Done()                       {}

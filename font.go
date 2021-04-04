@@ -59,7 +59,7 @@ func (f *fitzFont) Glyph(chr rune, trm gfx.Matrix) *gfx.Glyph {
 	glyphPath := C.fz_outline_glyph(f.ctx, f.font, C.int(gid), mat)
 
 	defer C.fz_drop_path(f.ctx, glyphPath)
-	path := makePath(f.ctx, glyphPath)
+	path := convertPath(f.ctx, glyphPath)
 
 	return &gfx.Glyph{
 		Path:  path,

@@ -1,20 +1,14 @@
 package fitz
 
-import (
-	"log"
-)
+import "fmt"
 
 type DisplayList struct {
 	PageNumber int
-	Commands   []GraphicsCommand
+	Commands   []interface{}
 }
 
 func (list *DisplayList) Apply(device Device) {
 	for _, command := range list.Commands {
-		if !device.ShouldCall(command.Kind()) {
-			continue
-		}
-
 		switch cmd := command.(type) {
 		case (*FillPathCommand):
 			device.FillPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Color)
@@ -60,10 +54,10 @@ func (list *DisplayList) Apply(device Device) {
 			device.BeginLayer(cmd.Name)
 		case (*EndLayerCommand):
 			device.EndLayer()
-		case (*CloseCommand):
-			device.Close()
+		case (*DoneCommand):
+			device.Done()
 		default:
-			log.Printf("skipping unknown command in display list: %v\n", cmd.Kind())
+			panic(fmt.Sprintf("unknown command in display list: %v\n", cmd))
 		}
 	}
 }

@@ -7,7 +7,6 @@ import (
 )
 
 type ListDevice struct {
-	BaseDevice
 	displayList *DisplayList
 }
 
@@ -211,12 +210,8 @@ func (dev *ListDevice) EndLayer() {
 }
 
 // Close implements the GoDevice interface
-func (dev *ListDevice) Close() {
-	dev.displayList.Commands = append(dev.displayList.Commands, &CloseCommand{})
-}
-
-type GraphicsCommand interface {
-	Kind() CommandKind
+func (dev *ListDevice) Done() {
+	dev.displayList.Commands = append(dev.displayList.Commands, &DoneCommand{})
 }
 
 type FillPathCommand struct {
@@ -226,8 +221,6 @@ type FillPathCommand struct {
 	Color    color.Color
 }
 
-func (c FillPathCommand) Kind() CommandKind { return FillPath }
-
 type StrokePathCommand struct {
 	Matrix gfx.Matrix
 	Path   *gfx.Path
@@ -235,15 +228,11 @@ type StrokePathCommand struct {
 	Color  color.Color
 }
 
-func (c StrokePathCommand) Kind() CommandKind { return StrokePath }
-
 type FillShadeCommand struct {
 	Matrix gfx.Matrix
 	Shader *gfx.Shader
 	Alpha  float64
 }
-
-func (c FillShadeCommand) Kind() CommandKind { return FillShade }
 
 type FillImageCommand struct {
 	Matrix gfx.Matrix
@@ -251,15 +240,11 @@ type FillImageCommand struct {
 	Alpha  float64
 }
 
-func (c FillImageCommand) Kind() CommandKind { return FillImage }
-
 type FillImageMaskCommand struct {
 	Matrix gfx.Matrix
 	Image  *Image
 	Color  color.Color
 }
-
-func (c FillImageMaskCommand) Kind() CommandKind { return FillImageMask }
 
 type ClipPathCommand struct {
 	Matrix   gfx.Matrix
@@ -268,8 +253,6 @@ type ClipPathCommand struct {
 	Scissor  gfx.Rect
 }
 
-func (c ClipPathCommand) Kind() CommandKind { return ClipPath }
-
 type ClipStrokePathCommand struct {
 	Matrix  gfx.Matrix
 	Path    *gfx.Path
@@ -277,23 +260,17 @@ type ClipStrokePathCommand struct {
 	Scissor gfx.Rect
 }
 
-func (c ClipStrokePathCommand) Kind() CommandKind { return ClipStrokePath }
-
 type ClipImageMaskCommand struct {
 	Matrix  gfx.Matrix
 	Image   *Image
 	Scissor gfx.Rect
 }
 
-func (c ClipImageMaskCommand) Kind() CommandKind { return ClipImageMask }
-
 type FillTextCommand struct {
 	Matrix gfx.Matrix
 	Text   *Text
 	Color  color.Color
 }
-
-func (c FillTextCommand) Kind() CommandKind { return FillText }
 
 type StrokeTextCommand struct {
 	Matrix gfx.Matrix
@@ -302,15 +279,11 @@ type StrokeTextCommand struct {
 	Color  color.Color
 }
 
-func (c StrokeTextCommand) Kind() CommandKind { return StrokeText }
-
 type ClipTextCommand struct {
 	Matrix  gfx.Matrix
 	Text    *Text
 	Scissor gfx.Rect
 }
-
-func (c ClipTextCommand) Kind() CommandKind { return ClipText }
 
 type ClipStrokeTextCommand struct {
 	Matrix  gfx.Matrix
@@ -319,18 +292,12 @@ type ClipStrokeTextCommand struct {
 	Scissor gfx.Rect
 }
 
-func (c ClipStrokeTextCommand) Kind() CommandKind { return ClipStrokeText }
-
 type IgnoreTextCommand struct {
 	Matrix gfx.Matrix
 	Text   *Text
 }
 
-func (c IgnoreTextCommand) Kind() CommandKind { return IgnoreText }
-
 type PopClipCommand struct{}
-
-func (c PopClipCommand) Kind() CommandKind { return PopClip }
 
 type BeginMaskCommand struct {
 	Rect       gfx.Rect
@@ -338,11 +305,7 @@ type BeginMaskCommand struct {
 	Luminosity int
 }
 
-func (c BeginMaskCommand) Kind() CommandKind { return BeginMask }
-
 type EndMaskCommand struct{}
-
-func (c EndMaskCommand) Kind() CommandKind { return EndMask }
 
 type BeginGroupCommand struct {
 	Rect       gfx.Rect
@@ -353,30 +316,9 @@ type BeginGroupCommand struct {
 	Alpha      float64
 }
 
-func (c BeginGroupCommand) Kind() CommandKind { return BeginGroup }
-
 type EndGroupCommand struct{}
-
-func (c EndGroupCommand) Kind() CommandKind { return EndGroup }
-
 type BeginTileCommand struct{}
-
-func (c BeginTileCommand) Kind() CommandKind { return BeginTile }
-
 type EndTileCommand struct{}
-
-func (c EndTileCommand) Kind() CommandKind { return EndTile }
-
-type BeginLayerCommand struct {
-	Name string
-}
-
-func (c BeginLayerCommand) Kind() CommandKind { return BeginLayer }
-
+type BeginLayerCommand struct{ Name string }
 type EndLayerCommand struct{}
-
-func (c EndLayerCommand) Kind() CommandKind { return EndLayer }
-
-type CloseCommand struct{}
-
-func (c CloseCommand) Kind() CommandKind { return CloseDevice }
+type DoneCommand struct{}

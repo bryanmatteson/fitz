@@ -53,7 +53,7 @@ func error_callback(userData unsafe.Pointer, message *C.char) {
 
 //export warn_callback
 func warn_callback(userData unsafe.Pointer, message *C.char) {
-	// fmt.Printf("[WARN]: %s\n", C.GoString(message))
+	fmt.Printf("[WARN]: %s\n", C.GoString(message))
 }
 
 func catch(err *error) {
