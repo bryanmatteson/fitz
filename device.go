@@ -104,7 +104,7 @@ func (dev *BaseDevice) EndLayer()                   {}
 func (dev *BaseDevice) Close()                      {}
 
 type LoopDevice struct {
-	Device
+	BaseDevice
 	done bool
 }
 
