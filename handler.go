@@ -6,7 +6,7 @@ import (
 	"go.matteson.dev/gfx"
 )
 
-type HandlerFunc interface{}
+type Handler Device
 
 type HandlerDevice struct {
 	BaseDevice
@@ -35,7 +35,7 @@ type HandlerDevice struct {
 	closeHandlers          []CloseHandler
 }
 
-func (dev *HandlerDevice) AddHandler(handlers ...HandlerFunc) {
+func (dev *HandlerDevice) AddHandler(handlers ...Handler) {
 	for _, handler := range handlers {
 		if h, ok := handler.(FillPathHandler); ok {
 			dev.fillPathHandlers = append(dev.fillPathHandlers, h)
@@ -107,6 +107,98 @@ func (dev *HandlerDevice) AddHandler(handlers ...HandlerFunc) {
 			dev.closeHandlers = append(dev.closeHandlers, h)
 		}
 	}
+}
+
+func (dev *HandlerDevice) AddFillPathHandler(h FillPathHandler) {
+	dev.fillPathHandlers = append(dev.fillPathHandlers, h)
+}
+
+func (dev *HandlerDevice) AddStrokePathHandler(h StrokePathHandler) {
+	dev.strokePathHandlers = append(dev.strokePathHandlers, h)
+}
+
+func (dev *HandlerDevice) AddFillShadeHandler(h FillShadeHandler) {
+	dev.fillShadeHandlers = append(dev.fillShadeHandlers, h)
+}
+
+func (dev *HandlerDevice) AddFillImageHandler(h FillImageHandler) {
+	dev.fillImageHandlers = append(dev.fillImageHandlers, h)
+}
+
+func (dev *HandlerDevice) AddFillImageMaskHandler(h FillImageMaskHandler) {
+	dev.fillImageMaskHandlers = append(dev.fillImageMaskHandlers, h)
+}
+
+func (dev *HandlerDevice) AddClipPathHandler(h ClipPathHandler) {
+	dev.clipPathHandlers = append(dev.clipPathHandlers, h)
+}
+
+func (dev *HandlerDevice) AddClipStrokePathHandler(h ClipStrokePathHandler) {
+	dev.clipStrokePathHandlers = append(dev.clipStrokePathHandlers, h)
+}
+
+func (dev *HandlerDevice) AddClipImageMaskHandler(h ClipImageMaskHandler) {
+	dev.clipImageMaskHandlers = append(dev.clipImageMaskHandlers, h)
+}
+
+func (dev *HandlerDevice) AddFillTextHandler(h FillTextHandler) {
+	dev.fillTextHandlers = append(dev.fillTextHandlers, h)
+}
+
+func (dev *HandlerDevice) AddStrokeTextHandler(h StrokeTextHandler) {
+	dev.strokeTextHandlers = append(dev.strokeTextHandlers, h)
+}
+
+func (dev *HandlerDevice) AddClipTextHandler(h ClipTextHandler) {
+	dev.clipTextHandlers = append(dev.clipTextHandlers, h)
+}
+
+func (dev *HandlerDevice) AddClipStrokeTextHandler(h ClipStrokeTextHandler) {
+	dev.clipStrokeTextHandlers = append(dev.clipStrokeTextHandlers, h)
+}
+
+func (dev *HandlerDevice) AddIgnoreTextHandler(h IgnoreTextHandler) {
+	dev.ignoreTextHandlers = append(dev.ignoreTextHandlers, h)
+}
+
+func (dev *HandlerDevice) AddPopClipHandler(h PopClipHandler) {
+	dev.popClipHandlers = append(dev.popClipHandlers, h)
+}
+
+func (dev *HandlerDevice) AddBeginMaskHandler(h BeginMaskHandler) {
+	dev.beginMaskHandlers = append(dev.beginMaskHandlers, h)
+}
+
+func (dev *HandlerDevice) AddEndMaskHandler(h EndMaskHandler) {
+	dev.endMaskHandlers = append(dev.endMaskHandlers, h)
+}
+
+func (dev *HandlerDevice) AddBeginGroupHandler(h BeginGroupHandler) {
+	dev.beginGroupHandlers = append(dev.beginGroupHandlers, h)
+}
+
+func (dev *HandlerDevice) AddEndGroupHandler(h EndGroupHandler) {
+	dev.endGroupHandlers = append(dev.endGroupHandlers, h)
+}
+
+func (dev *HandlerDevice) AddBeginTileHandler(h BeginTileHandler) {
+	dev.beginTileHandlers = append(dev.beginTileHandlers, h)
+}
+
+func (dev *HandlerDevice) AddEndTileHandler(h EndTileHandler) {
+	dev.endTileHandlers = append(dev.endTileHandlers, h)
+}
+
+func (dev *HandlerDevice) AddBeginLayerHandler(h BeginLayerHandler) {
+	dev.beginLayerHandlers = append(dev.beginLayerHandlers, h)
+}
+
+func (dev *HandlerDevice) AddEndLayerHandler(h EndLayerHandler) {
+	dev.endLayerHandlers = append(dev.endLayerHandlers, h)
+}
+
+func (dev *HandlerDevice) AddCloseHandler(h CloseHandler) {
+	dev.closeHandlers = append(dev.closeHandlers, h)
 }
 
 func (dev *HandlerDevice) ShouldCall(kind CommandKind) bool {
