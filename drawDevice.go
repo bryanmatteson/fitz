@@ -100,3 +100,4 @@ func (dev *DrawDevice) EndTile()                    {}
 func (dev *DrawDevice) BeginLayer(layerName string) {}
 func (dev *DrawDevice) EndLayer()                   {}
 func (dev *DrawDevice) Close()                      {}
+func (dev *DrawDevice) Drop()                       {}

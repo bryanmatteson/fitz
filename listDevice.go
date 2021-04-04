@@ -210,6 +210,10 @@ func (dev *ListDevice) Close() {
 	dev.displayList.commands = append(dev.displayList.commands, &closecmd{})
 }
 
+func (dev *ListDevice) Drop() {
+	dev.displayList.commands = append(dev.displayList.commands, &dropcmd{})
+}
+
 type fillpathcmd struct {
 	Matrix   gfx.Matrix
 	Path     *gfx.Path
@@ -318,3 +322,4 @@ type endtilecmd struct{}
 type beginlayercmd struct{ Name string }
 type endlayercmd struct{}
 type closecmd struct{}
+type dropcmd struct{}

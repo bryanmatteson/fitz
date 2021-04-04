@@ -31,11 +31,12 @@ const (
 	EndTileCommand
 	BeginLayerCommand
 	EndLayerCommand
+	CloseDeviceCommand
 )
 
 type Device interface {
 	Should(CommandKind) bool
-	Close()
+	Drop()
 
 	FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color)
 	StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color)
@@ -59,6 +60,7 @@ type Device interface {
 	EndTile()
 	BeginLayer(layerName string)
 	EndLayer()
+	Close()
 }
 
 type BaseDevice struct{}
@@ -102,6 +104,7 @@ func (dev *BaseDevice) EndTile()                    {}
 func (dev *BaseDevice) BeginLayer(layerName string) {}
 func (dev *BaseDevice) EndLayer()                   {}
 func (dev *BaseDevice) Close()                      {}
+func (dev *BaseDevice) Drop()                       {}
 
 type LoopDevice struct {
 	BaseDevice
@@ -110,6 +113,30 @@ type LoopDevice struct {
 
 func (dev *LoopDevice) Break()                       { dev.done = true }
 func (dev *LoopDevice) Should(kind CommandKind) bool { return !dev.done }
+
+type ChainDevice struct {
+	ListDevice
+	devices []Device
+}
+
+func NewChainDevice(devices ...Device) Device {
+	return &ChainDevice{devices: devices}
+}
+
+func (dev *ChainDevice) Close() {
+	for _, device := range dev.devices {
+		dev.displayList.Apply(device)
+		if device.Should(CloseDeviceCommand) {
+			device.Close()
+		}
+	}
+}
+
+func (dev *ChainDevice) Drop() {
+	for _, device := range dev.devices {
+		device.Drop()
+	}
+}
 
 type CompositeDevice struct {
 	devices []Device
@@ -300,6 +327,14 @@ func (dev *CompositeDevice) EndLayer() {
 
 func (dev *CompositeDevice) Close() {
 	for _, device := range dev.devices {
-		device.Close()
+		if device.Should(CloseDeviceCommand) {
+			device.Close()
+		}
+	}
+}
+
+func (dev *CompositeDevice) Drop() {
+	for _, device := range dev.devices {
+		device.Drop()
 	}
 }
