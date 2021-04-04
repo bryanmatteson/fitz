@@ -7,105 +7,69 @@ type DisplayList struct {
 	commands   []interface{}
 }
 
-func (list *DisplayList) Apply(device Device) {
+func (list *DisplayList) Apply(device Device) error {
+	if device.Error() != nil {
+		return device.Error()
+	}
+
 	for _, command := range list.commands {
 		switch cmd := command.(type) {
 		case (*fillpathcmd):
-			if device.Should(FillPathCommand) {
-				device.FillPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Color)
-			}
+			device.FillPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Color)
 		case (*strokepathcmd):
-			if device.Should(StrokePathCommand) {
-				device.StrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Color)
-			}
+			device.StrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Color)
 		case (*fillshadecmd):
-			if device.Should(FillShadeCommand) {
-				device.FillShade(cmd.Shader, cmd.Matrix, cmd.Alpha)
-			}
+			device.FillShade(cmd.Shader, cmd.Matrix, cmd.Alpha)
 		case (*fillimagecmd):
-			if device.Should(FillImageCommand) {
-				device.FillImage(cmd.Image, cmd.Matrix, cmd.Alpha)
-			}
+			device.FillImage(cmd.Image, cmd.Matrix, cmd.Alpha)
 		case (*fillimagemaskcmd):
-			if device.Should(FillImageMaskCommand) {
-				device.FillImageMask(cmd.Image, cmd.Matrix, cmd.Color)
-			}
+			device.FillImageMask(cmd.Image, cmd.Matrix, cmd.Color)
 		case (*clippathcmd):
-			if device.Should(ClipPathCommand) {
-				device.ClipPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Scissor)
-			}
+			device.ClipPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Scissor)
 		case (*clipstrokepathcmd):
-			if device.Should(ClipStrokePathCommand) {
-				device.ClipStrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Scissor)
-			}
+			device.ClipStrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Scissor)
 		case (*clipimagemaskcmd):
-			if device.Should(ClipImageMaskCommand) {
-				device.ClipImageMask(cmd.Image, cmd.Matrix, cmd.Scissor)
-			}
+			device.ClipImageMask(cmd.Image, cmd.Matrix, cmd.Scissor)
 		case (*filltextcmd):
-			if device.Should(FillTextCommand) {
-				device.FillText(cmd.Text, cmd.Matrix, cmd.Color)
-			}
+			device.FillText(cmd.Text, cmd.Matrix, cmd.Color)
 		case (*stroketextcmd):
-			if device.Should(StrokeTextCommand) {
-				device.StrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Color)
-			}
+			device.StrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Color)
 		case (*cliptextcmd):
-			if device.Should(ClipTextCommand) {
-				device.ClipText(cmd.Text, cmd.Matrix, cmd.Scissor)
-			}
+			device.ClipText(cmd.Text, cmd.Matrix, cmd.Scissor)
 		case (*clipstroketextcmd):
-			if device.Should(ClipStrokeTextCommand) {
-				device.ClipStrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Scissor)
-			}
+			device.ClipStrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Scissor)
 		case (*ignoretextcmd):
-			if device.Should(IgnoreTextCommand) {
-				device.IgnoreText(cmd.Text, cmd.Matrix)
-			}
+			device.IgnoreText(cmd.Text, cmd.Matrix)
 		case (*popclipcmd):
-			if device.Should(PopClipCommand) {
-				device.PopClip()
-			}
+			device.PopClip()
 		case (*beginmaskcmd):
-			if device.Should(BeginMaskCommand) {
-				device.BeginMask(cmd.Rect, cmd.Color, cmd.Luminosity)
-			}
+			device.BeginMask(cmd.Rect, cmd.Color, cmd.Luminosity)
 		case (*endmaskcmd):
-			if device.Should(EndMaskCommand) {
-				device.EndMask()
-			}
+			device.EndMask()
 		case (*begingroupcmd):
-			if device.Should(BeginGroupCommand) {
-				device.BeginGroup(cmd.Rect, cmd.Colorspace, cmd.Isolated, cmd.Knockout, cmd.BlendMode, cmd.Alpha)
-			}
+			device.BeginGroup(cmd.Rect, cmd.Colorspace, cmd.Isolated, cmd.Knockout, cmd.BlendMode, cmd.Alpha)
 		case (*endgroupcmd):
-			if device.Should(EndGroupCommand) {
-				device.EndGroup()
-			}
+			device.EndGroup()
 		case (*begintilecmd):
-			if device.Should(BeginTileCommand) {
-				device.BeginTile()
-			}
+			device.BeginTile()
 		case (*endtilecmd):
-			if device.Should(EndTileCommand) {
-				device.EndTile()
-			}
+			device.EndTile()
 		case (*beginlayercmd):
-			if device.Should(BeginLayerCommand) {
-				device.BeginLayer(cmd.Name)
-			}
+			device.BeginLayer(cmd.Name)
 		case (*endlayercmd):
-			if device.Should(EndLayerCommand) {
-				device.EndLayer()
-			}
+			device.EndLayer()
 		case (*closecmd):
-			if device.Should(CloseDeviceCommand) {
-				device.Close()
-			}
+			device.Close()
 		case (*dropcmd):
 			device.Drop()
 		default:
 			panic(fmt.Sprintf("unknown command in display list: %v\n", cmd))
 		}
+
+		if device.Error() != nil {
+			break
+		}
 	}
+
+	return device.Error()
 }

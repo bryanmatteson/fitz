@@ -1,6 +1,7 @@
 package fitz
 
 import (
+	"errors"
 	"image/color"
 
 	"go.matteson.dev/gfx"
@@ -34,10 +35,10 @@ const (
 	CloseDeviceCommand
 )
 
+var ErrBreak = errors.New("break")
+
 type Device interface {
-	Should(CommandKind) bool
-	Drop()
-	Break()
+	Error() error
 
 	FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color)
 	StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color)
@@ -62,14 +63,14 @@ type Device interface {
 	BeginLayer(layerName string)
 	EndLayer()
 	Close()
+	Drop()
 }
 
 type BaseDevice struct {
-	done bool
+	Err error
 }
 
-func (dev *BaseDevice) Break()                       { dev.done = true }
-func (dev *BaseDevice) Should(kind CommandKind) bool { return !dev.done }
+func (dev *BaseDevice) Error() error { return dev.Err }
 
 func (dev *BaseDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color) {
 }
@@ -121,10 +122,11 @@ func NewChainDevice(devices ...Device) Device {
 
 func (dev *ChainDevice) Close() {
 	for _, device := range dev.devices {
-		dev.displayList.Apply(device)
-		if device.Should(CloseDeviceCommand) {
-			device.Close()
+		if err := dev.displayList.Apply(device); err != nil {
+			dev.Err = err
+			break
 		}
+		device.Close()
 	}
 }
 
@@ -145,152 +147,190 @@ func NewCompositeDevice(devices ...Device) Device {
 
 func (dev *CompositeDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color) {
 	for _, device := range dev.devices {
-		if device.Should(FillPathCommand) {
-			device.FillPath(path, fillRule, matrix, fillColor)
+		device.FillPath(path, fillRule, matrix, fillColor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color) {
 	for _, device := range dev.devices {
-		if device.Should(StrokePathCommand) {
-			device.StrokePath(path, stroke, matrix, strokeColor)
+		device.StrokePath(path, stroke, matrix, strokeColor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64) {
 	for _, device := range dev.devices {
-		if device.Should(FillShadeCommand) {
-			device.FillShade(shade, matrix, alpha)
+		device.FillShade(shade, matrix, alpha)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) FillImage(image *Image, matrix gfx.Matrix, alpha float64) {
 	for _, device := range dev.devices {
-		if device.Should(FillImageCommand) {
-			device.FillImage(image, matrix, alpha)
+		device.FillImage(image, matrix, alpha)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) FillImageMask(image *Image, matrix gfx.Matrix, fillColor color.Color) {
 	for _, device := range dev.devices {
-		if device.Should(FillImageMaskCommand) {
-			device.FillImageMask(image, matrix, fillColor)
+		device.FillImageMask(image, matrix, fillColor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) ClipPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
 	for _, device := range dev.devices {
-		if device.Should(ClipPathCommand) {
-			device.ClipPath(path, fillRule, matrix, scissor)
+		device.ClipPath(path, fillRule, matrix, scissor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 	for _, device := range dev.devices {
-		if device.Should(ClipStrokePathCommand) {
-			device.ClipStrokePath(path, stroke, matrix, scissor)
+		device.ClipStrokePath(path, stroke, matrix, scissor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {
 	for _, device := range dev.devices {
-		if device.Should(ClipImageMaskCommand) {
-			device.ClipImageMask(image, matrix, scissor)
+		device.ClipImageMask(image, matrix, scissor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) FillText(text *Text, matrix gfx.Matrix, fillColor color.Color) {
 	for _, device := range dev.devices {
-		if device.Should(FillTextCommand) {
-			device.FillText(text, matrix, fillColor)
+		device.FillText(text, matrix, fillColor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) StrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color) {
 	for _, device := range dev.devices {
-		if device.Should(StrokeTextCommand) {
-			device.StrokeText(text, stroke, matrix, strokeColor)
+		device.StrokeText(text, stroke, matrix, strokeColor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) ClipText(text *Text, matrix gfx.Matrix, scissor gfx.Rect) {
 	for _, device := range dev.devices {
-		if device.Should(ClipTextCommand) {
-			device.ClipText(text, matrix, scissor)
+		device.ClipText(text, matrix, scissor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) ClipStrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 	for _, device := range dev.devices {
-		if device.Should(ClipStrokeTextCommand) {
-			device.ClipStrokeText(text, stroke, matrix, scissor)
+		device.ClipStrokeText(text, stroke, matrix, scissor)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) IgnoreText(text *Text, matrix gfx.Matrix) {
 	for _, device := range dev.devices {
-		if device.Should(IgnoreTextCommand) {
-			device.IgnoreText(text, matrix)
+		device.IgnoreText(text, matrix)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) PopClip() {
 	for _, device := range dev.devices {
-		if device.Should(PopClipCommand) {
-			device.PopClip()
+		device.PopClip()
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) BeginMask(rect gfx.Rect, color color.Color, luminosity int) {
 	for _, device := range dev.devices {
-		if device.Should(BeginMaskCommand) {
-			device.BeginMask(rect, color, luminosity)
+		device.BeginMask(rect, color, luminosity)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) EndMask() {
 	for _, device := range dev.devices {
-		if device.Should(EndMaskCommand) {
-			device.EndMask()
+		device.EndMask()
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) BeginGroup(rect gfx.Rect, cs *gfx.Colorspace, isolated bool, knockout bool, blendMode gfx.BlendMode, alpha float64) {
 	for _, device := range dev.devices {
-		if device.Should(BeginGroupCommand) {
-			device.BeginGroup(rect, cs, isolated, knockout, blendMode, alpha)
+		device.BeginGroup(rect, cs, isolated, knockout, blendMode, alpha)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) EndGroup() {
 	for _, device := range dev.devices {
-		if device.Should(EndGroupCommand) {
-			device.EndGroup()
+		device.EndGroup()
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) BeginTile() int {
 	for _, device := range dev.devices {
-		if device.Should(BeginTileCommand) {
-			device.BeginTile()
+		device.BeginTile()
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 	return 0
@@ -298,32 +338,40 @@ func (dev *CompositeDevice) BeginTile() int {
 
 func (dev *CompositeDevice) EndTile() {
 	for _, device := range dev.devices {
-		if device.Should(EndTileCommand) {
-			device.EndTile()
+		device.EndTile()
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) BeginLayer(layerName string) {
 	for _, device := range dev.devices {
-		if device.Should(BeginLayerCommand) {
-			device.BeginLayer(layerName)
+		device.BeginLayer(layerName)
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) EndLayer() {
 	for _, device := range dev.devices {
-		if device.Should(EndLayerCommand) {
-			device.EndLayer()
+		device.EndLayer()
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
 
 func (dev *CompositeDevice) Close() {
 	for _, device := range dev.devices {
-		if device.Should(CloseDeviceCommand) {
-			device.Close()
+		device.Close()
+		if device.Error() != nil {
+			dev.Err = device.Error()
+			break
 		}
 	}
 }
