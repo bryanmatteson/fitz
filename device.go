@@ -117,7 +117,12 @@ type ChainDevice struct {
 }
 
 func NewChainDevice(devices ...Device) Device {
-	return &ChainDevice{devices: devices}
+	return &ChainDevice{
+		ListDevice: ListDevice{
+			displayList: &DisplayList{},
+		},
+		devices: devices,
+	}
 }
 
 func (dev *ChainDevice) Close() {
