@@ -245,7 +245,7 @@ func fzgo_end_layer(ctx *C.fz_context, dev *C.fz_device) {
 //export fzgo_close_device
 func fzgo_close_device(ctx *C.fz_context, dev *C.fz_device) {
 	device := pointer.Restore(((*C.fzgo_device)(unsafe.Pointer(dev))).user_data).(Device)
-	device.Done()
+	device.Close()
 }
 
 //export fzgo_drop_device

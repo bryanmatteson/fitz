@@ -210,8 +210,8 @@ func (dev *ListDevice) EndLayer() {
 }
 
 // Close implements the GoDevice interface
-func (dev *ListDevice) Done() {
-	dev.displayList.Commands = append(dev.displayList.Commands, &DoneCommand{})
+func (dev *ListDevice) Close() {
+	dev.displayList.Commands = append(dev.displayList.Commands, &CloseCommand{})
 }
 
 type FillPathCommand struct {
@@ -321,4 +321,4 @@ type BeginTileCommand struct{}
 type EndTileCommand struct{}
 type BeginLayerCommand struct{ Name string }
 type EndLayerCommand struct{}
-type DoneCommand struct{}
+type CloseCommand struct{}

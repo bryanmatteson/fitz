@@ -102,4 +102,4 @@ func (dev *DebugDevice) BeginTile() int              { return 0 }
 func (dev *DebugDevice) EndTile()                    {}
 func (dev *DebugDevice) BeginLayer(layerName string) {}
 func (dev *DebugDevice) EndLayer()                   {}
-func (dev *DebugDevice) Done()                       {}
+func (dev *DebugDevice) Close()                      {}

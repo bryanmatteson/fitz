@@ -97,4 +97,4 @@ func (dev *DrawDevice) BeginTile() int              { return 0 }
 func (dev *DrawDevice) EndTile()                    {}
 func (dev *DrawDevice) BeginLayer(layerName string) {}
 func (dev *DrawDevice) EndLayer()                   {}
-func (dev *DrawDevice) Done()                       {}
+func (dev *DrawDevice) Close()                      {}

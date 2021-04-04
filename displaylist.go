@@ -54,8 +54,8 @@ func (list *DisplayList) Apply(device Device) {
 			device.BeginLayer(cmd.Name)
 		case (*EndLayerCommand):
 			device.EndLayer()
-		case (*DoneCommand):
-			device.Done()
+		case (*CloseCommand):
+			device.Close()
 		default:
 			panic(fmt.Sprintf("unknown command in display list: %v\n", cmd))
 		}
