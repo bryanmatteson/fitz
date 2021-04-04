@@ -363,3 +363,8 @@ type EndLayerHandler interface{ EndLayer() }
 type EndLayerHandlerFunc func()
 
 func (fn EndLayerHandlerFunc) EndLayer() { fn() }
+
+type CloseHandler interface{ Close() }
+type CloseHandlerFunc func()
+
+func (fn CloseHandlerFunc) Close() { fn() }
