@@ -6,11 +6,12 @@ import (
 	"go.matteson.dev/gfx"
 )
 
-type ListDevice struct{ displayList *DisplayList }
+type ListDevice struct {
+	BaseDevice
+	displayList *DisplayList
+}
 
 func NewListDevice(displayList *DisplayList) Device { return &ListDevice{displayList: displayList} }
-
-func (dev *ListDevice) Should(kind CommandKind) bool { return true }
 
 // FillPath implements the GoDevice interface
 func (dev *ListDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, color color.Color) {

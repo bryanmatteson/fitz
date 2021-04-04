@@ -63,9 +63,12 @@ type Device interface {
 	Close()
 }
 
-type BaseDevice struct{}
+type BaseDevice struct {
+	done bool
+}
 
-func (dev *BaseDevice) Should(CommandKind) bool { return true }
+func (dev *BaseDevice) Break()                       { dev.done = true }
+func (dev *BaseDevice) Should(kind CommandKind) bool { return !dev.done }
 
 func (dev *BaseDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color) {
 }
@@ -106,14 +109,6 @@ func (dev *BaseDevice) EndLayer()                   {}
 func (dev *BaseDevice) Close()                      {}
 func (dev *BaseDevice) Drop()                       {}
 
-type LoopDevice struct {
-	BaseDevice
-	done bool
-}
-
-func (dev *LoopDevice) Break()                       { dev.done = true }
-func (dev *LoopDevice) Should(kind CommandKind) bool { return !dev.done }
-
 type ChainDevice struct {
 	ListDevice
 	devices []Device
@@ -139,14 +134,13 @@ func (dev *ChainDevice) Drop() {
 }
 
 type CompositeDevice struct {
+	BaseDevice
 	devices []Device
 }
 
 func NewCompositeDevice(devices ...Device) Device {
 	return &CompositeDevice{devices: devices}
 }
-
-func (dev *CompositeDevice) Should(kind CommandKind) bool { return true }
 
 func (dev *CompositeDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color) {
 	for _, device := range dev.devices {

@@ -8,6 +8,7 @@ import (
 )
 
 type DrawDevice struct {
+	BaseDevice
 	image     image.Image
 	context   *gfx.ImageContext
 	transform gfx.Matrix
