@@ -4,57 +4,57 @@ import "fmt"
 
 type DisplayList struct {
 	PageNumber int
-	Commands   []interface{}
+	commands   []interface{}
 }
 
 func (list *DisplayList) Apply(device Device) {
-	for _, command := range list.Commands {
+	for _, command := range list.commands {
 		switch cmd := command.(type) {
-		case (*FillPathCommand):
+		case (*fillpathcmd):
 			device.FillPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Color)
-		case (*StrokePathCommand):
+		case (*strokepathcmd):
 			device.StrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Color)
-		case (*FillShadeCommand):
+		case (*fillshadecmd):
 			device.FillShade(cmd.Shader, cmd.Matrix, cmd.Alpha)
-		case (*FillImageCommand):
+		case (*fillimagecmd):
 			device.FillImage(cmd.Image, cmd.Matrix, cmd.Alpha)
-		case (*FillImageMaskCommand):
+		case (*fillimagemaskcmd):
 			device.FillImageMask(cmd.Image, cmd.Matrix, cmd.Color)
-		case (*ClipPathCommand):
+		case (*clippathcmd):
 			device.ClipPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Scissor)
-		case (*ClipStrokePathCommand):
+		case (*clipstrokepathcmd):
 			device.ClipStrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Scissor)
-		case (*ClipImageMaskCommand):
+		case (*clipimagemaskcmd):
 			device.ClipImageMask(cmd.Image, cmd.Matrix, cmd.Scissor)
-		case (*FillTextCommand):
+		case (*filltextcmd):
 			device.FillText(cmd.Text, cmd.Matrix, cmd.Color)
-		case (*StrokeTextCommand):
+		case (*stroketextcmd):
 			device.StrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Color)
-		case (*ClipTextCommand):
+		case (*cliptextcmd):
 			device.ClipText(cmd.Text, cmd.Matrix, cmd.Scissor)
-		case (*ClipStrokeTextCommand):
+		case (*clipstroketextcmd):
 			device.ClipStrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Scissor)
-		case (*IgnoreTextCommand):
+		case (*ignoretextcmd):
 			device.IgnoreText(cmd.Text, cmd.Matrix)
-		case (*PopClipCommand):
+		case (*popclipcmd):
 			device.PopClip()
-		case (*BeginMaskCommand):
+		case (*beginmaskcmd):
 			device.BeginMask(cmd.Rect, cmd.Color, cmd.Luminosity)
-		case (*EndMaskCommand):
+		case (*endmaskcmd):
 			device.EndMask()
-		case (*BeginGroupCommand):
+		case (*begingroupcmd):
 			device.BeginGroup(cmd.Rect, cmd.Colorspace, cmd.Isolated, cmd.Knockout, cmd.BlendMode, cmd.Alpha)
-		case (*EndGroupCommand):
+		case (*endgroupcmd):
 			device.EndGroup()
-		case (*BeginTileCommand):
+		case (*begintilecmd):
 			device.BeginTile()
-		case (*EndTileCommand):
+		case (*endtilecmd):
 			device.EndTile()
-		case (*BeginLayerCommand):
+		case (*beginlayercmd):
 			device.BeginLayer(cmd.Name)
-		case (*EndLayerCommand):
+		case (*endlayercmd):
 			device.EndLayer()
-		case (*CloseCommand):
+		case (*closecmd):
 			device.Close()
 		default:
 			panic(fmt.Sprintf("unknown command in display list: %v\n", cmd))

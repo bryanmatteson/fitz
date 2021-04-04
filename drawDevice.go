@@ -19,6 +19,8 @@ func NewDrawDevice(transform gfx.Matrix, dest *image.RGBA) Device {
 	return &DrawDevice{image: dest, context: ctx, transform: transform}
 }
 
+func (dev *DrawDevice) Should(kind CommandKind) bool { return true }
+
 func (dev *DrawDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.Matrix, fillColor color.Color) {
 	dev.context.SetTransformationMatrix(ctm.Concat(dev.transform))
 	dev.context.SetFillColor(fillColor)

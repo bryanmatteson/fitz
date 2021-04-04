@@ -9,7 +9,7 @@ import (
 )
 
 type DebugDevice struct {
-	NullDevice
+	BaseDevice
 	image     image.Image
 	context   *gfx.ImageContext
 	transform gfx.Matrix
