@@ -37,6 +37,7 @@ const (
 type Device interface {
 	Should(CommandKind) bool
 	Drop()
+	Break()
 
 	FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color)
 	StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color)
