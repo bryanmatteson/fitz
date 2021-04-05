@@ -6,6 +6,7 @@ import "C"
 import (
 	"bytes"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -153,7 +154,7 @@ func NewDocumentFromBytes(b []byte) (d *Document, err error) {
 	return NewDocument(bytes.NewReader(b))
 }
 
-func NewDocument(r io.ReadSeeker) (d *Document, err error) {
+func NewDocument(r io.Reader) (d *Document, err error) {
 	ctx := C.fzgo_new_context()
 
 	if err != nil {
@@ -163,10 +164,20 @@ func NewDocument(r io.ReadSeeker) (d *Document, err error) {
 
 	C.fz_register_document_handlers(ctx)
 
-	stream, err := newStreamFromReader(ctx, 16384, r)
+	var stream *C.fz_stream
+	if rds, ok := r.(io.ReadSeeker); ok {
+		stream, err = newStreamFromReader(ctx, 16384, rds)
+	} else {
+		var b []byte
+		if b, err = ioutil.ReadAll(r); err == nil {
+			stream, err = newStreamFromBytes(ctx, 16384, b)
+		}
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer C.fz_drop_stream(ctx, stream)
 
 	native := C.pdf_open_document_with_stream(ctx, stream)
