@@ -4,8 +4,8 @@ package fitz
 import "C"
 
 import (
+	"bytes"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -149,16 +149,11 @@ func newDocument(ctx *C.fz_context, doc *C.pdf_document) *Document {
 	}
 }
 
-func NewDocument(r io.Reader) (*Document, error) {
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, ErrOpenReader
-	}
-
-	return NewDocumentFromBytes(b)
+func NewDocumentFromBytes(b []byte) (d *Document, err error) {
+	return NewDocument(bytes.NewReader(b))
 }
 
-func NewDocumentFromBytes(b []byte) (d *Document, err error) {
+func NewDocument(r io.ReadSeeker) (d *Document, err error) {
 	ctx := C.fzgo_new_context()
 
 	if err != nil {
@@ -168,12 +163,11 @@ func NewDocumentFromBytes(b []byte) (d *Document, err error) {
 
 	C.fz_register_document_handlers(ctx)
 
-	data := (*C.uchar)(C.CBytes(b))
-	stream := C.fz_open_memory(ctx, data, C.size_t(len(b)))
-	if stream == nil {
-		err = ErrOpenMemory
-		return
+	stream, err := newStreamFromReader(ctx, 16384, r)
+	if err != nil {
+		return nil, err
 	}
+	defer C.fz_drop_stream(ctx, stream)
 
 	native := C.pdf_open_document_with_stream(ctx, stream)
 	if native == nil {

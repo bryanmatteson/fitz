@@ -51,11 +51,21 @@ extern void gooutput_writer_drop(fz_context* ctx, void* state);
 extern void gooutput_writer_seek(fz_context* ctx, void* state, int64_t offset, int whence);
 extern int64_t gooutput_writer_tell(fz_context* ctx, void* state);
 
+extern int fzgo_read_stream_next(fz_context* ctx, fz_stream* stm, size_t max);
+extern void fzgo_read_stream_seek(fz_context* ctx, fz_stream* stm, int64_t offset, int whence);
+extern void fzgo_read_stream_drop(fz_context* ctx, void* state);
+
 fz_output* fzgo_new_output_writer(fz_context* ctx, int bufsize, void* iowriter) {
     fz_output* output = fz_new_output(ctx, bufsize, iowriter, gooutput_writer_write, gooutput_writer_close, gooutput_writer_drop);
     output->tell = gooutput_writer_tell;
     output->seek = gooutput_writer_seek;
     return output;
+}
+
+fz_stream* fzgo_new_read_stream(fz_context* ctx, void* state) {
+    fz_stream* stream = fz_new_stream(ctx, state, fzgo_read_stream_next, fzgo_read_stream_drop);
+    stream->seek = fzgo_read_stream_seek;
+    return stream;
 }
 
 const char* fz_version = FZ_VERSION;

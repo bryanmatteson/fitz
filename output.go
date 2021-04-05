@@ -2,6 +2,7 @@ package fitz
 
 // #include "bridge.h"
 import "C"
+
 import (
 	"bytes"
 	"errors"
@@ -12,33 +13,33 @@ import (
 )
 
 //export gooutput_writer_write
-func gooutput_writer_write(ctx *C.fz_context, state *C.void, data C.cvoidptr_t, length C.size_t) {
-	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
-	buffer := C.GoBytes(unsafe.Pointer(data), C.int(length))
+func gooutput_writer_write(ctx *C.fz_context, state unsafe.Pointer, data unsafe.Pointer, length C.size_t) {
+	output := pointer.Restore(state).(*outputwriter)
+	buffer := C.GoBytes(data, C.int(length))
 	output.Write(buffer)
 }
 
 //export gooutput_writer_close
-func gooutput_writer_close(ctx *C.fz_context, state *C.void) {
-	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
+func gooutput_writer_close(ctx *C.fz_context, state unsafe.Pointer) {
+	output := pointer.Restore(state).(*outputwriter)
 	output.Destination.Write(output.Bytes())
 }
 
 //export gooutput_writer_tell
-func gooutput_writer_tell(ctx *C.fz_context, state *C.void) int64 {
-	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
+func gooutput_writer_tell(ctx *C.fz_context, state unsafe.Pointer) int64 {
+	output := pointer.Restore(state).(*outputwriter)
 	return int64(output.Position())
 }
 
 //export gooutput_writer_seek
-func gooutput_writer_seek(ctx *C.fz_context, state *C.void, offset C.int64_t, whence C.int) {
-	output := pointer.Restore(unsafe.Pointer(state)).(*outputwriter)
+func gooutput_writer_seek(ctx *C.fz_context, state unsafe.Pointer, offset C.int64_t, whence C.int) {
+	output := pointer.Restore(state).(*outputwriter)
 	output.Seek(int64(offset), int(whence))
 }
 
 //export gooutput_writer_drop
-func gooutput_writer_drop(ctx *C.fz_context, state *C.void) {
-	pointer.Unref(unsafe.Pointer(state))
+func gooutput_writer_drop(ctx *C.fz_context, state unsafe.Pointer) {
+	pointer.Unref(state)
 }
 
 type outputwriter struct {

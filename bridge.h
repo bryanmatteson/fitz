@@ -15,6 +15,7 @@ typedef const fz_stroke_state cfz_stroke_state_t;
 typedef const fz_path_walker cfz_path_walker;
 typedef const void* cvoidptr_t;
 
+fz_stream* fzgo_new_read_stream(fz_context* ctx, void* state);
 fz_context* fzgo_new_context();
 fz_context* fzgo_new_user_context(void* user);
 fz_device* fz_new_go_device(fz_context* ctx, void* user_data);

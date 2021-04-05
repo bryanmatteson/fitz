@@ -17,6 +17,20 @@ import (
 	"go.matteson.dev/no/x/urlx"
 )
 
+func TestDocumentReader(t *testing.T) {
+	file, err := os.Open("/Users/bryan/Desktop/scratch/mdt3.pdf")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	doc, err := fitz.NewDocument(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	doc.LoadPage(0)
+	doc.Close()
+}
+
 func TestDocumentFont(t *testing.T) {
 	doc, err := fitz.NewDocumentFromFile("/Users/bryan/Desktop/scratch/mdt3.pdf")
 	if err != nil {
