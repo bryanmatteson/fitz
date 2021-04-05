@@ -6,6 +6,7 @@ import "C"
 import (
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"sync"
@@ -52,26 +53,36 @@ func (d *Document) LoadPage(num int) (*Page, error) {
 	return d.pages[num], nil
 }
 
-func (d *Document) ParallelPageProcess(fn func(p *Page, err error)) {
+func (d *Document) ParallelPageProcess(fn func(p *Page)) {
 	var wg sync.WaitGroup
 	pageCount := d.NumPages()
 	wg.Add(pageCount)
 
 	for i := 0; i < pageCount; i++ {
-		go func(p *Page, err error) {
+		p, err := d.LoadPage(i)
+		if err != nil {
+			log.Printf("%v", err)
+			continue
+		}
+		go func(p *Page) {
 			defer wg.Done()
-			fn(p, err)
-		}(d.LoadPage(i))
+			fn(p)
+		}(p)
 	}
 
 	wg.Wait()
 }
 
-func (d *Document) SequentialPageProcess(fn func(p *Page, err error)) {
+func (d *Document) SequentialPageProcess(fn func(p *Page)) {
 	pageCount := d.NumPages()
 
 	for i := 0; i < pageCount; i++ {
-		fn(d.LoadPage(i))
+		p, err := d.LoadPage(i)
+		if err != nil {
+			log.Printf("%v", err)
+			continue
+		}
+		fn(p)
 	}
 }
 
