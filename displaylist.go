@@ -3,8 +3,7 @@ package fitz
 import "fmt"
 
 type DisplayList struct {
-	PageNumber int
-	commands   []interface{}
+	commands []interface{}
 }
 
 func (list *DisplayList) Apply(device Device) error {
