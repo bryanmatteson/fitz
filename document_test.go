@@ -18,7 +18,7 @@ import (
 )
 
 func TestDocumentFont(t *testing.T) {
-	doc, err := fitz.NewDocument("/Users/bryan/Desktop/scratch/mdt3.pdf")
+	doc, err := fitz.NewDocumentFromFile("/Users/bryan/Desktop/scratch/mdt3.pdf")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func TestDocumentFont(t *testing.T) {
 }
 
 func TestDocumentSplit(t *testing.T) {
-	doc, err := fitz.NewDocument("/Users/bryan/Desktop/scratch/mdt3.pdf")
+	doc, err := fitz.NewDocumentFromFile("/Users/bryan/Desktop/scratch/mdt3.pdf")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestDocumentMemory(t *testing.T) {
 	}
 
 	for item := range items {
-		doc, err := fitz.NewDocument(item)
+		doc, err := fitz.NewDocumentFromFile(item)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -10,7 +10,7 @@ import (
 )
 
 func TestPageRender(t *testing.T) {
-	doc, err := fitz.NewDocument("/Volumes/SamT5/backup/misc/reports/BIO/bio_quick_view_report/1487927b-ca2e-4121-b0ea-918731053f28.pdf")
+	doc, err := fitz.NewDocumentFromFile("/Volumes/SamT5/backup/misc/reports/BIO/bio_quick_view_report/1487927b-ca2e-4121-b0ea-918731053f28.pdf")
 	if err != nil {
 		t.Fatal(err)
 	}

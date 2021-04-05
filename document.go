@@ -22,19 +22,6 @@ type Document struct {
 	pages  map[int]*Page
 }
 
-func NewDocument(source interface{}) (*Document, error) {
-	switch t := source.(type) {
-	case string:
-		return newDocumentFromFile(t)
-	case []byte:
-		return newDocumentFromBytes(t)
-	case io.Reader:
-		return newDocumentFromReader(t)
-	default:
-		return nil, ErrUnknownSource
-	}
-}
-
 func (d *Document) GetFontCache() gfx.FontCache {
 	return pointer.Restore(unsafe.Pointer(d.ctx.user)).(*usercontext).fontCache
 }
@@ -151,16 +138,16 @@ func newDocument(ctx *C.fz_context, doc *C.pdf_document) *Document {
 	}
 }
 
-func newDocumentFromReader(r io.Reader) (*Document, error) {
+func NewDocument(r io.Reader) (*Document, error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
 		return nil, ErrOpenReader
 	}
 
-	return newDocumentFromBytes(b)
+	return NewDocumentFromBytes(b)
 }
 
-func newDocumentFromBytes(b []byte) (d *Document, err error) {
+func NewDocumentFromBytes(b []byte) (d *Document, err error) {
 	ctx := C.fzgo_new_context()
 
 	if err != nil {
@@ -198,7 +185,7 @@ func newDocumentFromBytes(b []byte) (d *Document, err error) {
 	return newDocument(ctx, native), nil
 }
 
-func newDocumentFromFile(fileName string) (d *Document, err error) {
+func NewDocumentFromFile(fileName string) (d *Document, err error) {
 	fileName, err = filepath.Abs(fileName)
 	if err != nil {
 		return
