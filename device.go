@@ -125,10 +125,8 @@ func NewChainDevice(devices ...Device) Device {
 
 func (dev *ChainDevice) Close() {
 	for _, device := range dev.devices {
-		if dev.Err != nil {
-			if err := dev.replayList.Apply(device); err != nil {
-				dev.Err = err
-			}
+		if dev.Err == nil {
+			dev.Err = dev.replayList.Apply(device)
 		}
 		device.Close()
 	}
