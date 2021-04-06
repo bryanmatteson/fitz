@@ -34,31 +34,31 @@ func (list *ReplayList) Replay(device Device) error {
 func rundevcmd(device Device, command interface{}) {
 	switch cmd := command.(type) {
 	case (*FillPathCmd):
-		device.FillPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Color)
+		device.FillPath(cmd.Path, cmd.FillRule, cmd.Transform, cmd.Color)
 	case (*StrokePathCmd):
-		device.StrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Color)
+		device.StrokePath(cmd.Path, cmd.Stroke, cmd.Transform, cmd.Color)
 	case (*FillShadeCmd):
-		device.FillShade(cmd.Shader, cmd.Matrix, cmd.Alpha)
+		device.FillShade(cmd.Shader, cmd.Transform, cmd.Alpha)
 	case (*FillImageCmd):
-		device.FillImage(cmd.Image, cmd.Matrix, cmd.Alpha)
+		device.FillImage(cmd.Image, cmd.Transform, cmd.Alpha)
 	case (*FillImageMaskCmd):
-		device.FillImageMask(cmd.Image, cmd.Matrix, cmd.Color)
+		device.FillImageMask(cmd.Image, cmd.Transform, cmd.Color)
 	case (*ClipPathCmd):
-		device.ClipPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Scissor)
+		device.ClipPath(cmd.Path, cmd.FillRule, cmd.Transform, cmd.Scissor)
 	case (*ClipStrokePathCmd):
-		device.ClipStrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Scissor)
+		device.ClipStrokePath(cmd.Path, cmd.Stroke, cmd.Transform, cmd.Scissor)
 	case (*ClipImageMaskCmd):
-		device.ClipImageMask(cmd.Image, cmd.Matrix, cmd.Scissor)
+		device.ClipImageMask(cmd.Image, cmd.Transform, cmd.Scissor)
 	case (*FillTextCmd):
-		device.FillText(cmd.Text, cmd.Matrix, cmd.Color)
+		device.FillText(cmd.Text, cmd.Transform, cmd.Color)
 	case (*StrokeTextCmd):
-		device.StrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Color)
+		device.StrokeText(cmd.Text, cmd.Stroke, cmd.Transform, cmd.Color)
 	case (*ClipTextCmd):
-		device.ClipText(cmd.Text, cmd.Matrix, cmd.Scissor)
+		device.ClipText(cmd.Text, cmd.Transform, cmd.Scissor)
 	case (*ClipStrokeTextCmd):
-		device.ClipStrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Scissor)
+		device.ClipStrokeText(cmd.Text, cmd.Stroke, cmd.Transform, cmd.Scissor)
 	case (*IgnoreTextCmd):
-		device.IgnoreText(cmd.Text, cmd.Matrix)
+		device.IgnoreText(cmd.Text, cmd.Transform)
 	case (*PopClipCmd):
 		device.PopClip()
 	case (*BeginMaskCmd):
@@ -90,136 +90,136 @@ type ReplayDevice struct {
 func NewReplayDevice(replayList *ReplayList) Device { return &ReplayDevice{replayList: replayList} }
 
 // FillPath implements the GoDevice interface
-func (dev *ReplayDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, color color.Color) {
+func (dev *ReplayDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, trm gfx.Matrix, color color.Color) {
 	cmd := FillPathCmd{
-		Matrix:   matrix,
-		Path:     path,
-		FillRule: fillRule,
-		Color:    color,
+		Transform: trm,
+		Path:      path,
+		FillRule:  fillRule,
+		Color:     color,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // StrokePath implements the GoDevice interface
-func (dev *ReplayDevice) StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color) {
+func (dev *ReplayDevice) StrokePath(path *gfx.Path, stroke *gfx.Stroke, trm gfx.Matrix, color color.Color) {
 	cmd := StrokePathCmd{
-		Matrix: matrix,
-		Path:   path,
-		Stroke: stroke,
-		Color:  color,
+		Transform: trm,
+		Path:      path,
+		Stroke:    stroke,
+		Color:     color,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // FillShade implements the GoDevice interface
-func (dev *ReplayDevice) FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64) {
+func (dev *ReplayDevice) FillShade(shade *gfx.Shader, trm gfx.Matrix, alpha float64) {
 	cmd := FillShadeCmd{
-		Matrix: matrix,
-		Alpha:  float64(alpha),
-		Shader: shade,
+		Transform: trm,
+		Alpha:     float64(alpha),
+		Shader:    shade,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // FillImage implements the GoDevice interface
-func (dev *ReplayDevice) FillImage(image *Image, matrix gfx.Matrix, alpha float64) {
+func (dev *ReplayDevice) FillImage(image *Image, trm gfx.Matrix, alpha float64) {
 	cmd := FillImageCmd{
-		Matrix: matrix,
-		Image:  image,
-		Alpha:  float64(alpha),
+		Transform: trm,
+		Image:     image,
+		Alpha:     float64(alpha),
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // FillImageMask implements the GoDevice interface
-func (dev *ReplayDevice) FillImageMask(image *Image, matrix gfx.Matrix, color color.Color) {
+func (dev *ReplayDevice) FillImageMask(image *Image, trm gfx.Matrix, color color.Color) {
 	cmd := FillImageMaskCmd{
-		Matrix: matrix,
-		Image:  image,
-		Color:  color,
+		Transform: trm,
+		Image:     image,
+		Color:     color,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // ClipPath implements the GoDevice interface
-func (dev *ReplayDevice) ClipPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *ReplayDevice) ClipPath(path *gfx.Path, fillRule gfx.FillRule, trm gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipPathCmd{
-		Matrix:   matrix,
-		Path:     path,
-		FillRule: fillRule,
-		Scissor:  scissor,
+		Transform: trm,
+		Path:      path,
+		FillRule:  fillRule,
+		Scissor:   scissor,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // ClipStrokePath implements the GoDevice interface
-func (dev *ReplayDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *ReplayDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, trm gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipStrokePathCmd{
-		Matrix:  matrix,
-		Path:    path,
-		Stroke:  stroke,
-		Scissor: scissor,
+		Transform: trm,
+		Path:      path,
+		Stroke:    stroke,
+		Scissor:   scissor,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // ClipImageMask implements the GoDevice interface
-func (dev *ReplayDevice) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *ReplayDevice) ClipImageMask(image *Image, trm gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipImageMaskCmd{
-		Matrix:  matrix,
-		Image:   image,
-		Scissor: scissor,
+		Transform: trm,
+		Image:     image,
+		Scissor:   scissor,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // FillText implements the GoDevice interface
-func (dev *ReplayDevice) FillText(txt *Text, matrix gfx.Matrix, color color.Color) {
+func (dev *ReplayDevice) FillText(text *Text, trm gfx.Matrix, color color.Color) {
 	cmd := FillTextCmd{
-		Matrix: matrix,
-		Text:   txt,
-		Color:  color,
+		Transform: trm,
+		Text:      text,
+		Color:     color,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // StrokeText implements the GoDevice interface
-func (dev *ReplayDevice) StrokeText(txt *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color) {
+func (dev *ReplayDevice) StrokeText(text *Text, stroke *gfx.Stroke, trm gfx.Matrix, color color.Color) {
 	cmd := StrokeTextCmd{
-		Matrix: matrix,
-		Text:   txt,
-		Stroke: stroke,
-		Color:  color,
+		Transform: trm,
+		Text:      text,
+		Stroke:    stroke,
+		Color:     color,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // ClipText implements the GoDevice interface
-func (dev *ReplayDevice) ClipText(txt *Text, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *ReplayDevice) ClipText(text *Text, trm gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipTextCmd{
-		Matrix:  matrix,
-		Text:    txt,
-		Scissor: scissor,
+		Transform: trm,
+		Text:      text,
+		Scissor:   scissor,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // ClipStrokeText implements the GoDevice interface
-func (dev *ReplayDevice) ClipStrokeText(txt *Text, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
+func (dev *ReplayDevice) ClipStrokeText(text *Text, stroke *gfx.Stroke, trm gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipStrokeTextCmd{
-		Matrix:  matrix,
-		Text:    txt,
-		Stroke:  stroke,
-		Scissor: scissor,
+		Transform: trm,
+		Text:      text,
+		Stroke:    stroke,
+		Scissor:   scissor,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // IgnoreText implements the GoDevice interface
-func (dev *ReplayDevice) IgnoreText(txt *Text, matrix gfx.Matrix) {
+func (dev *ReplayDevice) IgnoreText(text *Text, trm gfx.Matrix) {
 	cmd := IgnoreTextCmd{
-		Matrix: matrix,
-		Text:   txt,
+		Transform: trm,
+		Text:      text,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
