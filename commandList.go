@@ -195,15 +195,11 @@ type IgnoreTextCmd struct {
 	Text   *Text
 }
 
-type PopClipCmd struct{}
-
 type BeginMaskCmd struct {
 	Rect       gfx.Rect
 	Color      color.Color
 	Luminosity int
 }
-
-type EndMaskCmd struct{}
 
 type BegingGoupCmd struct {
 	Rect       gfx.Rect
@@ -214,6 +210,8 @@ type BegingGoupCmd struct {
 	Alpha      float64
 }
 
+type PopClipCmd struct{}
+type EndMaskCmd struct{}
 type EndGroupCmd struct{}
 type BeginTileCmd struct{}
 type EndTileCmd struct{}

@@ -11,72 +11,75 @@ type ReplayList struct {
 	commands []interface{}
 }
 
-func (list *ReplayList) ApplyAndClose(device Device) (err error) {
+func (list *ReplayList) ReplayAndClose(device Device) error {
 	defer device.Close()
-	return list.Apply(device)
+	return list.Replay(device)
 }
 
-func (list *ReplayList) Apply(device Device) error {
+func (list *ReplayList) Replay(device Device) error {
 	if device.Error() != nil {
 		return device.Error()
 	}
 
 	for _, command := range list.commands {
-		switch cmd := command.(type) {
-		case (*FillPathCmd):
-			device.FillPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Color)
-		case (*StrokePathCmd):
-			device.StrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Color)
-		case (*FillShadeCmd):
-			device.FillShade(cmd.Shader, cmd.Matrix, cmd.Alpha)
-		case (*FillImageCmd):
-			device.FillImage(cmd.Image, cmd.Matrix, cmd.Alpha)
-		case (*FillImageMaskCmd):
-			device.FillImageMask(cmd.Image, cmd.Matrix, cmd.Color)
-		case (*ClipPathCmd):
-			device.ClipPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Scissor)
-		case (*ClipStrokePathCmd):
-			device.ClipStrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Scissor)
-		case (*ClipImageMaskCmd):
-			device.ClipImageMask(cmd.Image, cmd.Matrix, cmd.Scissor)
-		case (*FillTextCmd):
-			device.FillText(cmd.Text, cmd.Matrix, cmd.Color)
-		case (*StrokeTextCmd):
-			device.StrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Color)
-		case (*ClipTextCmd):
-			device.ClipText(cmd.Text, cmd.Matrix, cmd.Scissor)
-		case (*ClipStrokeTextCmd):
-			device.ClipStrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Scissor)
-		case (*IgnoreTextCmd):
-			device.IgnoreText(cmd.Text, cmd.Matrix)
-		case (*PopClipCmd):
-			device.PopClip()
-		case (*BeginMaskCmd):
-			device.BeginMask(cmd.Rect, cmd.Color, cmd.Luminosity)
-		case (*EndMaskCmd):
-			device.EndMask()
-		case (*BegingGoupCmd):
-			device.BeginGroup(cmd.Rect, cmd.Colorspace, cmd.Isolated, cmd.Knockout, cmd.BlendMode, cmd.Alpha)
-		case (*EndGroupCmd):
-			device.EndGroup()
-		case (*BeginTileCmd):
-			device.BeginTile()
-		case (*EndTileCmd):
-			device.EndTile()
-		case (*BeginLayerCmd):
-			device.BeginLayer(cmd.Name)
-		case (*EndLayerCmd):
-			device.EndLayer()
-		default:
-			panic(fmt.Sprintf("unknown command in display list: %v\n", cmd))
-		}
-
+		rundevcmd(device, command)
 		if device.Error() != nil {
 			break
 		}
 	}
 
 	return device.Error()
+}
+
+func rundevcmd(device Device, command interface{}) {
+	switch cmd := command.(type) {
+	case (*FillPathCmd):
+		device.FillPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Color)
+	case (*StrokePathCmd):
+		device.StrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Color)
+	case (*FillShadeCmd):
+		device.FillShade(cmd.Shader, cmd.Matrix, cmd.Alpha)
+	case (*FillImageCmd):
+		device.FillImage(cmd.Image, cmd.Matrix, cmd.Alpha)
+	case (*FillImageMaskCmd):
+		device.FillImageMask(cmd.Image, cmd.Matrix, cmd.Color)
+	case (*ClipPathCmd):
+		device.ClipPath(cmd.Path, cmd.FillRule, cmd.Matrix, cmd.Scissor)
+	case (*ClipStrokePathCmd):
+		device.ClipStrokePath(cmd.Path, cmd.Stroke, cmd.Matrix, cmd.Scissor)
+	case (*ClipImageMaskCmd):
+		device.ClipImageMask(cmd.Image, cmd.Matrix, cmd.Scissor)
+	case (*FillTextCmd):
+		device.FillText(cmd.Text, cmd.Matrix, cmd.Color)
+	case (*StrokeTextCmd):
+		device.StrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Color)
+	case (*ClipTextCmd):
+		device.ClipText(cmd.Text, cmd.Matrix, cmd.Scissor)
+	case (*ClipStrokeTextCmd):
+		device.ClipStrokeText(cmd.Text, cmd.Stroke, cmd.Matrix, cmd.Scissor)
+	case (*IgnoreTextCmd):
+		device.IgnoreText(cmd.Text, cmd.Matrix)
+	case (*PopClipCmd):
+		device.PopClip()
+	case (*BeginMaskCmd):
+		device.BeginMask(cmd.Rect, cmd.Color, cmd.Luminosity)
+	case (*EndMaskCmd):
+		device.EndMask()
+	case (*BegingGoupCmd):
+		device.BeginGroup(cmd.Rect, cmd.Colorspace, cmd.Isolated, cmd.Knockout, cmd.BlendMode, cmd.Alpha)
+	case (*EndGroupCmd):
+		device.EndGroup()
+	case (*BeginTileCmd):
+		device.BeginTile()
+	case (*EndTileCmd):
+		device.EndTile()
+	case (*BeginLayerCmd):
+		device.BeginLayer(cmd.Name)
+	case (*EndLayerCmd):
+		device.EndLayer()
+	default:
+		panic(fmt.Sprintf("unknown command in display list: %v\n", cmd))
+	}
 }
 
 type ReplayDevice struct {
