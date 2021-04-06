@@ -89,8 +89,8 @@ func TestDocumentMemory(t *testing.T) {
 			pg, _ := doc.LoadPage(i)
 			pg.RenderImage(pg.Bounds(), 5)
 			pg.GetText()
-			var displayList fitz.DisplayList
-			pg.RunDevice(fitz.NewListDevice(&displayList))
+			var displayList fitz.ReplayList
+			pg.RunDevice(fitz.NewReplayDevice(&displayList))
 		}
 		doc.Close()
 

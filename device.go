@@ -63,7 +63,6 @@ type Device interface {
 	BeginLayer(layerName string)
 	EndLayer()
 	Close()
-	Drop()
 }
 
 type BaseDevice struct {
@@ -109,17 +108,16 @@ func (dev *BaseDevice) EndTile()                    {}
 func (dev *BaseDevice) BeginLayer(layerName string) {}
 func (dev *BaseDevice) EndLayer()                   {}
 func (dev *BaseDevice) Close()                      {}
-func (dev *BaseDevice) Drop()                       {}
 
 type ChainDevice struct {
-	ListDevice
+	ReplayDevice
 	devices []Device
 }
 
 func NewChainDevice(devices ...Device) Device {
 	return &ChainDevice{
-		ListDevice: ListDevice{
-			displayList: &DisplayList{},
+		ReplayDevice: ReplayDevice{
+			replayList: &ReplayList{},
 		},
 		devices: devices,
 	}
@@ -127,17 +125,12 @@ func NewChainDevice(devices ...Device) Device {
 
 func (dev *ChainDevice) Close() {
 	for _, device := range dev.devices {
-		if err := dev.displayList.Apply(device); err != nil {
-			dev.Err = err
-			break
+		if dev.Err != nil {
+			if err := dev.replayList.Apply(device); err != nil {
+				dev.Err = err
+			}
 		}
 		device.Close()
-	}
-}
-
-func (dev *ChainDevice) Drop() {
-	for _, device := range dev.devices {
-		device.Drop()
 	}
 }
 
@@ -374,15 +367,5 @@ func (dev *CompositeDevice) EndLayer() {
 func (dev *CompositeDevice) Close() {
 	for _, device := range dev.devices {
 		device.Close()
-		if device.Error() != nil {
-			dev.Err = device.Error()
-			break
-		}
-	}
-}
-
-func (dev *CompositeDevice) Drop() {
-	for _, device := range dev.devices {
-		device.Drop()
 	}
 }
