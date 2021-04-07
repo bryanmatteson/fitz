@@ -116,8 +116,6 @@ func (dev *DrawDevice) FillText(text *Text, ctm gfx.Matrix, fillColor color.Colo
 	dev.context.SetFillColor(fillColor)
 
 	for _, span := range text.Spans {
-		str := span.String()
-		fmt.Println(str)
 		for _, letter := range span.Letters {
 			glyph := span.Font.Glyph(letter.Rune, span.Matrix.Translated(letter.Origin.X, letter.Origin.Y).Compose(ctm, dev.transform))
 			dev.context.Fill(glyph.Path)
