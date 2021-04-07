@@ -26,17 +26,17 @@ func newPage(doc *C.pdf_document, docCtx *C.fz_context, number int) *Page {
 	list := C.fz_new_display_list_from_page(docCtx, &pg.super)
 	bounds := C.fz_bound_page(docCtx, &pg.super)
 
-	ctx := C.fz_clone_context(docCtx)
-	userCtx := newusercontext()
-	userCtx.fontCache.init(ctx, doc, pg)
-	ctx.user = pointer.Save(userCtx)
+	// ctx := C.fz_clone_context(docCtx)
+	// userCtx := newusercontext()
+	// userCtx.fontCache.init(ctx, doc, pg)
+	// ctx.user = pointer.Save(userCtx)
 
-	return &Page{ctx: ctx, number: number, bounds: bounds, list: list}
+	return &Page{ctx: docCtx, number: number, bounds: bounds, list: list}
 }
 
 func (p *Page) drop() {
 	C.fz_drop_display_list(p.ctx, p.list)
-	C.fz_drop_context(p.ctx)
+	// C.fz_drop_context(p.ctx)
 	p.list = nil
 	p.ctx = nil
 }

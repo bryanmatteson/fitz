@@ -95,7 +95,62 @@ func newfontcache() *fontCache {
 	return &fontCache{fonts: make(map[string]gfx.Font)}
 }
 
-func (fc *fontCache) init(ctx *C.fz_context, doc *C.pdf_document, page *C.pdf_page) {
+func (fc *fontCache) init(ctx *C.fz_context, doc *C.pdf_document) {
+	fc.mut.Lock()
+	defer fc.mut.Unlock()
+
+	var fonts []*C.pdf_obj
+	numPages := int(C.pdf_count_pages(ctx, doc))
+
+	for i := 0; i < numPages; i++ {
+		pgref := C.pdf_lookup_page_obj(ctx, doc, C.int(i))
+		if pgref == nil {
+			log.Printf("cannot get info from page %d", i)
+			continue
+		}
+		rsrc := C.pdf_dict_get(ctx, pgref, pdfName(C.PDF_ENUM_NAME_Resources))
+		fontObj := C.pdf_dict_get(ctx, rsrc, pdfName(C.PDF_ENUM_NAME_Font))
+
+		if fontObj == nil {
+			continue
+		}
+
+		n := int(C.pdf_dict_len(ctx, fontObj))
+		for i := 0; i < n; i++ {
+			fontDict := C.pdf_dict_get_val(ctx, fontObj, C.int(i))
+			if C.pdf_is_dict(ctx, fontDict) == 0 {
+				log.Printf("not a font dict (%d 0 R)", int(C.pdf_to_num(ctx, fontDict)))
+				continue
+			}
+
+			found := false
+			for _, f := range fonts {
+				if C.pdf_objcmp(ctx, f, fontDict) == 0 {
+					found = true
+					break
+				}
+			}
+			if found {
+				continue
+			}
+
+			fonts = append(fonts, fontDict)
+
+			desc := C.pdf_load_font(ctx, doc, rsrc, fontDict)
+			if desc == nil {
+				desc = C.pdf_load_hail_mary_font(ctx, doc)
+			}
+
+			font := newfitzfont(ctx, desc.font)
+			key := font.Info().String()
+			if _, ok := fc.fonts[key]; !ok {
+				fc.fonts[key] = font
+			}
+		}
+	}
+}
+
+func (fc *fontCache) initPage(ctx *C.fz_context, doc *C.pdf_document, page *C.pdf_page) {
 	fc.mut.Lock()
 	defer fc.mut.Unlock()
 

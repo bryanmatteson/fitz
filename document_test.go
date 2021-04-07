@@ -85,15 +85,20 @@ func TestDocumentMemory(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		doc.ParallelPageProcess(func(pg *fitz.Page) {
-			pg.RenderImage(pg.Bounds(), 5)
-			pg.GetText()
+		doc.SequentialPageProcess(func(pg *fitz.Page) {
+			img, err := pg.RenderImage(pg.Bounds(), 5)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var buf bytes.Buffer
+			png.Encode(&buf, img)
+
+			fmt.Println(pg.GetText())
 			var displayList fitz.ReplayList
 			pg.RunDevice(fitz.NewReplayDevice(&displayList))
-
 		})
 		doc.Close()
-
 		fmt.Println(item)
 	}
 

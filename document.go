@@ -49,25 +49,25 @@ func (d *Document) LoadPage(num int) (*Page, error) {
 	return d.pages[num], nil
 }
 
-func (d *Document) ParallelPageProcess(fn func(p *Page)) {
-	var wg sync.WaitGroup
-	pageCount := d.NumPages()
-	wg.Add(pageCount)
+// func (d *Document) ParallelPageProcess(fn func(p *Page)) {
+// 	var wg sync.WaitGroup
+// 	pageCount := d.NumPages()
+// 	wg.Add(pageCount)
 
-	for i := 0; i < pageCount; i++ {
-		p, err := d.LoadPage(i)
-		if err != nil {
-			log.Printf("%v", err)
-			continue
-		}
-		go func(p *Page) {
-			defer wg.Done()
-			fn(p)
-		}(p)
-	}
+// 	for i := 0; i < pageCount; i++ {
+// 		p, err := d.LoadPage(i)
+// 		if err != nil {
+// 			log.Printf("%v", err)
+// 			continue
+// 		}
+// 		go func(p *Page) {
+// 			defer wg.Done()
+// 			fn(p)
+// 		}(p)
+// 	}
 
-	wg.Wait()
-}
+// 	wg.Wait()
+// }
 
 func (d *Document) SequentialPageProcess(fn func(p *Page)) {
 	pageCount := d.NumPages()
@@ -189,6 +189,10 @@ func NewDocument(r io.Reader) (d *Document, err error) {
 		return nil, err
 	}
 
+	userCtx := newusercontext()
+	userCtx.fontCache.init(ctx, native)
+	ctx.user = pointer.Save(userCtx)
+
 	return newDocument(ctx, native), nil
 }
 
@@ -227,6 +231,10 @@ func NewDocumentFromFile(fileName string) (d *Document, err error) {
 		C.fz_drop_context(ctx)
 		return nil, err
 	}
+
+	userCtx := newusercontext()
+	userCtx.fontCache.init(ctx, native)
+	ctx.user = pointer.Save(userCtx)
 
 	return newDocument(ctx, native), nil
 }
