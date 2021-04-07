@@ -2,6 +2,7 @@ package fitz
 
 import (
 	"fmt"
+	"image"
 	"image/color"
 
 	"go.matteson.dev/gfx"
@@ -122,20 +123,20 @@ func (dev *ReplayDevice) FillShade(shade *gfx.Shader, trm gfx.Matrix, alpha floa
 }
 
 // FillImage implements the GoDevice interface
-func (dev *ReplayDevice) FillImage(image *Image, trm gfx.Matrix, alpha float64) {
+func (dev *ReplayDevice) FillImage(img image.Image, trm gfx.Matrix, alpha float64) {
 	cmd := FillImageCmd{
 		Transform: trm,
-		Image:     image,
+		Image:     img,
 		Alpha:     float64(alpha),
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
 }
 
 // FillImageMask implements the GoDevice interface
-func (dev *ReplayDevice) FillImageMask(image *Image, trm gfx.Matrix, color color.Color) {
+func (dev *ReplayDevice) FillImageMask(img image.Image, trm gfx.Matrix, color color.Color) {
 	cmd := FillImageMaskCmd{
 		Transform: trm,
-		Image:     image,
+		Image:     img,
 		Color:     color,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)
@@ -164,10 +165,10 @@ func (dev *ReplayDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, trm 
 }
 
 // ClipImageMask implements the GoDevice interface
-func (dev *ReplayDevice) ClipImageMask(image *Image, trm gfx.Matrix, scissor gfx.Rect) {
+func (dev *ReplayDevice) ClipImageMask(img image.Image, trm gfx.Matrix, scissor gfx.Rect) {
 	cmd := ClipImageMaskCmd{
 		Transform: trm,
-		Image:     image,
+		Image:     img,
 		Scissor:   scissor,
 	}
 	dev.replayList.commands = append(dev.replayList.commands, &cmd)

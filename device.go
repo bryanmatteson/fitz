@@ -2,6 +2,7 @@ package fitz
 
 import (
 	"errors"
+	"image"
 	"image/color"
 
 	"go.matteson.dev/gfx"
@@ -42,11 +43,11 @@ type Device interface {
 	FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, fillColor color.Color)
 	StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color)
 	FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64)
-	FillImage(image *Image, matrix gfx.Matrix, alpha float64)
-	FillImageMask(image *Image, matrix gfx.Matrix, color color.Color)
+	FillImage(img image.Image, matrix gfx.Matrix, alpha float64)
+	FillImageMask(img image.Image, matrix gfx.Matrix, color color.Color)
 	ClipPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect)
 	ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect)
-	ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect)
+	ClipImageMask(img image.Image, matrix gfx.Matrix, scissor gfx.Rect)
 	FillText(text *Text, matrix gfx.Matrix, color color.Color)
 	StrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, color color.Color)
 	ClipText(text *Text, matrix gfx.Matrix, scissor gfx.Rect)
@@ -76,17 +77,17 @@ func (dev *BaseDevice) FillPath(path *gfx.Path, fillRule gfx.FillRule, matrix gf
 func (dev *BaseDevice) StrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color) {
 }
 
-func (dev *BaseDevice) FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64)        {}
-func (dev *BaseDevice) FillImage(image *Image, matrix gfx.Matrix, alpha float64)             {}
-func (dev *BaseDevice) FillImageMask(image *Image, matrix gfx.Matrix, fillColor color.Color) {}
+func (dev *BaseDevice) FillShade(shade *gfx.Shader, matrix gfx.Matrix, alpha float64)           {}
+func (dev *BaseDevice) FillImage(img image.Image, matrix gfx.Matrix, alpha float64)             {}
+func (dev *BaseDevice) FillImageMask(img image.Image, matrix gfx.Matrix, fillColor color.Color) {}
 func (dev *BaseDevice) ClipPath(path *gfx.Path, fillRule gfx.FillRule, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
 func (dev *BaseDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, matrix gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *BaseDevice) ClipImageMask(image *Image, matrix gfx.Matrix, scissor gfx.Rect) {}
-func (dev *BaseDevice) FillText(text *Text, matrix gfx.Matrix, color color.Color)       {}
+func (dev *BaseDevice) ClipImageMask(img image.Image, matrix gfx.Matrix, scissor gfx.Rect) {}
+func (dev *BaseDevice) FillText(text *Text, matrix gfx.Matrix, color color.Color)          {}
 func (dev *BaseDevice) StrokeText(text *Text, stroke *gfx.Stroke, matrix gfx.Matrix, strokeColor color.Color) {
 }
 

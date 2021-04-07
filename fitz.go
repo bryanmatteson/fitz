@@ -9,6 +9,10 @@ import (
 	"unsafe"
 )
 
+const FZ_LOCK_ALLOC = C.FZ_LOCK_ALLOC
+const FZ_LOCK_GLYPHCACHE = C.FZ_LOCK_GLYPHCACHE
+const FZ_LOCK_FREETYPE = C.FZ_LOCK_FREETYPE
+
 // Version returns the version of mupdf
 func Version() string {
 	return C.GoString(C.fz_version)

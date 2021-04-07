@@ -60,12 +60,14 @@ func fzgo_fill_shade(ctx *C.fz_context, dev *C.fz_device, shade *C.fz_shade, ctm
 	}
 
 	switch shade._type {
+	case C.FZ_LINEAR:
+		shader.Kind = gfx.LinearShader
 	case C.FZ_FUNCTION_BASED:
-		shader.Kind = gfx.FunctionShaderKind
+		shader.Kind = gfx.FunctionShader
 	case C.FZ_RADIAL:
-		shader.Kind = gfx.RadialShaderKind
+		shader.Kind = gfx.RadialShader
 	case C.FZ_MESH_TYPE4, C.FZ_MESH_TYPE5, C.FZ_MESH_TYPE6, C.FZ_MESH_TYPE7:
-		shader.Kind = gfx.MeshShaderKind
+		shader.Kind = gfx.MeshShader
 	}
 
 	device.FillShade(shader, matrix, float64(alpha))

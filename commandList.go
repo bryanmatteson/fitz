@@ -1,6 +1,7 @@
 package fitz
 
 import (
+	"image"
 	"image/color"
 
 	"go.matteson.dev/gfx"
@@ -49,13 +50,13 @@ func (dev *CommandDevice) FillShade(shade *gfx.Shader, trm gfx.Matrix, alpha flo
 	dev.commandList.FillShades = append(dev.commandList.FillShades, cmd)
 }
 
-func (dev *CommandDevice) FillImage(image *Image, trm gfx.Matrix, alpha float64) {
-	cmd := &FillImageCmd{Transform: trm, Image: image, Alpha: float64(alpha)}
+func (dev *CommandDevice) FillImage(img image.Image, trm gfx.Matrix, alpha float64) {
+	cmd := &FillImageCmd{Transform: trm, Image: img, Alpha: float64(alpha)}
 	dev.commandList.FillImages = append(dev.commandList.FillImages, cmd)
 }
 
-func (dev *CommandDevice) FillImageMask(image *Image, trm gfx.Matrix, color color.Color) {
-	cmd := &FillImageMaskCmd{Transform: trm, Image: image, Color: color}
+func (dev *CommandDevice) FillImageMask(img image.Image, trm gfx.Matrix, color color.Color) {
+	cmd := &FillImageMaskCmd{Transform: trm, Image: img, Color: color}
 	dev.commandList.FillImageMasks = append(dev.commandList.FillImageMasks, cmd)
 }
 
@@ -69,8 +70,8 @@ func (dev *CommandDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, trm
 	dev.commandList.ClipStrokePaths = append(dev.commandList.ClipStrokePaths, cmd)
 }
 
-func (dev *CommandDevice) ClipImageMask(image *Image, trm gfx.Matrix, scissor gfx.Rect) {
-	cmd := &ClipImageMaskCmd{Transform: trm, Image: image, Scissor: scissor}
+func (dev *CommandDevice) ClipImageMask(img image.Image, trm gfx.Matrix, scissor gfx.Rect) {
+	cmd := &ClipImageMaskCmd{Transform: trm, Image: img, Scissor: scissor}
 	dev.commandList.ClipImageMasks = append(dev.commandList.ClipImageMasks, cmd)
 }
 
@@ -135,13 +136,13 @@ type FillShadeCmd struct {
 
 type FillImageCmd struct {
 	Transform gfx.Matrix
-	Image     *Image
+	Image     image.Image
 	Alpha     float64
 }
 
 type FillImageMaskCmd struct {
 	Transform gfx.Matrix
-	Image     *Image
+	Image     image.Image
 	Color     color.Color
 }
 
@@ -161,7 +162,7 @@ type ClipStrokePathCmd struct {
 
 type ClipImageMaskCmd struct {
 	Transform gfx.Matrix
-	Image     *Image
+	Image     image.Image
 	Scissor   gfx.Rect
 }
 

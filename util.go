@@ -3,6 +3,7 @@ package fitz
 // #include "bridge.h"
 import "C"
 import (
+	"image"
 	"image/color"
 	"unsafe"
 
@@ -59,15 +60,38 @@ func getStroke(stroke *C.fz_stroke_state) *gfx.Stroke {
 	}
 }
 
-func getImage(ctx *C.fz_context, img *C.fz_image, colorParams C.fz_color_params) *Image {
+func getImage(ctx *C.fz_context, img *C.fz_image, colorParams C.fz_color_params) image.Image {
 	pix := C.fz_get_pixmap_from_image(ctx, img, nil, nil, nil, nil)
 	defer C.fz_drop_pixmap(ctx, pix)
+
+	height := int(C.fz_pixmap_height(ctx, pix))
+	width := int(C.fz_pixmap_width(ctx, pix))
 
 	cs := C.fz_pixmap_colorspace(ctx, pix)
 
 	switch C.fz_colorspace_type(ctx, cs) {
-	case C.FZ_COLORSPACE_RGB, C.FZ_COLORSPACE_NONE:
+	case C.FZ_COLORSPACE_RGB:
 		break
+
+	case C.FZ_COLORSPACE_NONE:
+		pixels := C.fz_pixmap_samples(ctx, pix)
+		stride := int(C.fz_pixmap_stride(ctx, pix))
+		return &image.Alpha{
+			Pix:    C.GoBytes(unsafe.Pointer(pixels), C.int(stride*height)),
+			Rect:   image.Rect(0, 0, width, height),
+			Stride: stride,
+		}
+
+	case C.FZ_COLORSPACE_GRAY:
+		pixels := C.fz_pixmap_samples(ctx, pix)
+		stride := int(C.fz_pixmap_stride(ctx, pix))
+
+		return &image.Gray{
+			Pix:    C.GoBytes(unsafe.Pointer(pixels), C.int(stride*height)),
+			Rect:   image.Rect(0, 0, width, height),
+			Stride: stride,
+		}
+
 	default:
 		pix = C.fz_convert_pixmap(ctx, pix, C.fz_device_rgb(ctx), nil, nil, colorParams, 1)
 		defer C.fz_drop_pixmap(ctx, pix)
@@ -75,19 +99,35 @@ func getImage(ctx *C.fz_context, img *C.fz_image, colorParams C.fz_color_params)
 
 	comp := int(C.fz_pixmap_components(ctx, pix))
 	stride := int(C.fz_pixmap_stride(ctx, pix))
-	height := int(C.fz_pixmap_height(ctx, pix))
-	width := int(C.fz_pixmap_width(ctx, pix))
+	pixels := C.fz_pixmap_samples(ctx, pix)
 	x := int(C.fz_pixmap_x(ctx, pix))
 	y := int(C.fz_pixmap_y(ctx, pix))
-	pixels := C.fz_pixmap_samples(ctx, pix)
-	data := C.GoBytes(unsafe.Pointer(pixels), C.int(stride*height))
 
-	return &Image{
-		Rect:    gfx.MakeRectWH(float64(x), float64(y), float64(width), float64(height)),
-		Data:    data,
-		Stride:  stride,
-		NumComp: comp,
+	pixPtr := unsafe.Pointer(pixels)
+
+	switch comp {
+	case 4:
+		return &image.RGBA{
+			Pix:    C.GoBytes(unsafe.Pointer(pixels), C.int(stride*height)),
+			Rect:   image.Rect(0, 0, width, height),
+			Stride: stride,
+		}
+	case 3:
+		rgba := image.NewRGBA(image.Rect(0, 0, width, height))
+		for row := y; row < y+height; row++ {
+			for col := x; col < x+width; col++ {
+				rgba.SetRGBA(col, row, color.RGBA{
+					R: uint8(*(*C.uchar)(unsafe.Pointer((uintptr(pixPtr) + uintptr(stride)*uintptr(row-y)) + uintptr((col-x)*comp) + 0))),
+					G: uint8(*(*C.uchar)(unsafe.Pointer((uintptr(pixPtr) + uintptr(stride)*uintptr(row-y)) + uintptr((col-x)*comp) + 1))),
+					B: uint8(*(*C.uchar)(unsafe.Pointer((uintptr(pixPtr) + uintptr(stride)*uintptr(row-y)) + uintptr((col-x)*comp) + 2))),
+					A: 255,
+				})
+			}
+		}
+		return rgba
 	}
+
+	panic("??")
 }
 
 func getTextInfo(ctx *C.fz_context, fztext *C.fz_text, ctm C.fz_matrix, col color.Color) (text *Text) {

@@ -38,16 +38,16 @@ func TestDocumentFont(t *testing.T) {
 	}
 	defer doc.Close()
 
-	pg, _ := doc.LoadPage(0)
-	trm := gfx.NewScaleMatrix(3, 3)
-	bounds := trm.TransformRect(pg.Bounds())
-	img := image.NewRGBA(bounds.ImageRect())
+	doc.SequentialPageProcess(func(pg *fitz.Page) {
+		trm := gfx.NewScaleMatrix(3, 3)
+		bounds := trm.TransformRect(pg.Bounds())
+		img := image.NewRGBA(bounds.ImageRect())
 
-	pg.RunDevice(fitz.NewDrawDevice(gfx.NewScaleMatrix(3, 3), img))
-
-	var buf bytes.Buffer
-	png.Encode(&buf, img)
-	ioutil.WriteFile("/Users/bryan/Desktop/test.png", buf.Bytes(), os.ModePerm)
+		pg.RunDevice(fitz.NewDrawDevice(gfx.NewScaleMatrix(3, 3), img))
+		var buf bytes.Buffer
+		png.Encode(&buf, img)
+		ioutil.WriteFile(fmt.Sprintf("/Users/bryan/Desktop/mdt3/test%d.png", pg.Number()), buf.Bytes(), os.ModePerm)
+	})
 }
 
 func TestDocumentSplit(t *testing.T) {
@@ -85,13 +85,13 @@ func TestDocumentMemory(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		for i := 0; i < doc.NumPages(); i++ {
-			pg, _ := doc.LoadPage(i)
+		doc.ParallelPageProcess(func(pg *fitz.Page) {
 			pg.RenderImage(pg.Bounds(), 5)
 			pg.GetText()
 			var displayList fitz.ReplayList
 			pg.RunDevice(fitz.NewReplayDevice(&displayList))
-		}
+
+		})
 		doc.Close()
 
 		fmt.Println(item)

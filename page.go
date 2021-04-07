@@ -19,8 +19,18 @@ type Page struct {
 	bounds C.fz_rect
 }
 
-func newPage(ctx *C.fz_context, number int, bounds C.fz_rect, list *C.fz_display_list) *Page {
-	ctx = C.fz_clone_context(ctx)
+func newPage(doc *C.pdf_document, docCtx *C.fz_context, number int) *Page {
+	pg := C.pdf_load_page(docCtx, doc, C.int(number))
+	defer C.fz_drop_page(docCtx, &pg.super)
+
+	list := C.fz_new_display_list_from_page(docCtx, &pg.super)
+	bounds := C.fz_bound_page(docCtx, &pg.super)
+
+	ctx := C.fz_clone_context(docCtx)
+	userCtx := newusercontext()
+	userCtx.fontCache.init(ctx, doc, pg)
+	ctx.user = pointer.Save(userCtx)
+
 	return &Page{ctx: ctx, number: number, bounds: bounds, list: list}
 }
 

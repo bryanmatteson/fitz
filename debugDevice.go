@@ -16,8 +16,8 @@ type DebugDevice struct {
 }
 
 func NewDebugDevice(transform gfx.Matrix, dest *image.RGBA) Device {
-	ctx := gfx.NewImageContext(dest)
-	ctx.Clear()
+	ctx := gfx.NewContextForImage(dest)
+	ctx.Clear(color.White)
 	return &DebugDevice{image: dest, context: ctx, transform: transform}
 }
 
@@ -37,26 +37,26 @@ func (dev *DebugDevice) StrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.M
 
 func (dev *DebugDevice) FillShade(shade *gfx.Shader, ctm gfx.Matrix, alpha float64) {}
 
-func (dev *DebugDevice) FillImage(image *Image, ctm gfx.Matrix, alpha float64) {
+func (dev *DebugDevice) FillImage(img image.Image, ctm gfx.Matrix, alpha float64) {
 	trm := ctm.Concat(dev.transform)
 
 	// ctm is a transform from the image (expressed as a unit rect) to the destination device
 	// we need to reverse and scale it to get a mapping from the destination to the source pixels,
 	// then finally invert it to end up with a transform from image rect to destination device
-	inv := trm.Inverted().PostScaled(image.Rect.Width(), image.Rect.Height()).Inverted()
+	inv := trm.Inverted().PostScaled(float64(img.Bounds().Dx()), float64(img.Bounds().Dy())).Inverted()
 
 	dev.context.SetTransformationMatrix(inv)
-	dev.context.DrawImage(image)
+	dev.context.DrawImage(img)
 }
 
-func (dev *DebugDevice) FillImageMask(image *Image, ctm gfx.Matrix, color color.Color) {}
+func (dev *DebugDevice) FillImageMask(img image.Image, ctm gfx.Matrix, color color.Color) {}
 func (dev *DebugDevice) ClipPath(path *gfx.Path, fillRule gfx.FillRule, ctm gfx.Matrix, scissor gfx.Rect) {
 }
 
 func (dev *DebugDevice) ClipStrokePath(path *gfx.Path, stroke *gfx.Stroke, ctm gfx.Matrix, scissor gfx.Rect) {
 }
 
-func (dev *DebugDevice) ClipImageMask(image *Image, ctm gfx.Matrix, scissor gfx.Rect) {}
+func (dev *DebugDevice) ClipImageMask(img image.Image, ctm gfx.Matrix, scissor gfx.Rect) {}
 
 func (dev *DebugDevice) FillText(text *Text, ctm gfx.Matrix, fillColor color.Color) {
 	dev.context.SetTransformationMatrix(ctm.Concat(dev.transform))

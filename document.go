@@ -43,12 +43,7 @@ func (d *Document) LoadPage(num int) (*Page, error) {
 	}
 
 	if _, ok := d.pages[num]; !ok {
-		pg := C.fz_load_page(d.ctx, &d.native.super, C.int(num))
-		defer C.fz_drop_page(d.ctx, pg)
-
-		list := C.fz_new_display_list_from_page(d.ctx, pg)
-		bounds := C.fz_bound_page(d.ctx, pg)
-		d.pages[num] = newPage(d.ctx, num, bounds, list)
+		d.pages[num] = newPage(d.native, d.ctx, num)
 	}
 
 	return d.pages[num], nil
@@ -194,10 +189,6 @@ func NewDocument(r io.Reader) (d *Document, err error) {
 		return nil, err
 	}
 
-	userCtx := newusercontext(ctx)
-	userCtx.fontCache.init(ctx, native)
-	ctx.user = pointer.Save(userCtx)
-
 	return newDocument(ctx, native), nil
 }
 
@@ -237,10 +228,6 @@ func NewDocumentFromFile(fileName string) (d *Document, err error) {
 		return nil, err
 	}
 
-	userCtx := newusercontext(ctx)
-	userCtx.fontCache.init(ctx, native)
-
-	ctx.user = pointer.Save(userCtx)
 	return newDocument(ctx, native), nil
 }
 
