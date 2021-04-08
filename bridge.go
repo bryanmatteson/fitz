@@ -325,32 +325,32 @@ func fzgo_drop_device(ctx *C.fz_context, dev *C.fz_device) {
 
 //export gopath_moveto
 func gopath_moveto(ctx *C.fz_context, arg *C.void, x C.float, y C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathWalker)
 	walker.MoveTo(float64(x), float64(y))
 }
 
 //export gopath_lineto
 func gopath_lineto(ctx *C.fz_context, arg *C.void, x C.float, y C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathWalker)
 	walker.LineTo(float64(x), float64(y))
 }
 
 //export gopath_curveto
 func gopath_curveto(ctx *C.fz_context, arg *C.void, x1 C.float, y1 C.float, x2 C.float, y2 C.float, x3 C.float, y3 C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathWalker)
 	walker.CubicCurveTo(float64(x1), float64(y1), float64(x2), float64(y2), float64(x3), float64(y3))
 }
 
 //export gopath_quadto
 func gopath_quadto(ctx *C.fz_context, arg *C.void, x1 C.float, y1 C.float, x2 C.float, y2 C.float) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathWalker)
 	walker.QuadCurveTo(float64(x1), float64(y1), float64(x2), float64(y2))
 }
 
 //export gopath_closepath
 func gopath_closepath(ctx *C.fz_context, arg *C.void) {
-	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathBuilder)
-	walker.ClosePath()
+	walker := pointer.Restore(unsafe.Pointer(arg)).(gfx.PathWalker)
+	walker.Close()
 }
 
 func convertPath(ctx *C.fz_context, path *C.fz_path) *gfx.Path {

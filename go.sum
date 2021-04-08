@@ -191,6 +191,8 @@ go.matteson.dev/gfx v0.0.0-20210407170428-f03105cd921d h1:phlhWda9Kw7RN+UQAwR4JF
 go.matteson.dev/gfx v0.0.0-20210407170428-f03105cd921d/go.mod h1:9lyTyhhFlj4nbiQDMrQuYiCJ3Cj/xEWdM/fKmYI4JF0=
 go.matteson.dev/gfx v0.0.0-20210407171617-5849b7307780 h1:xNEZfUBluinB6SiBcAaZtRrUZxZsD00P3d+PpgiHZzk=
 go.matteson.dev/gfx v0.0.0-20210407171617-5849b7307780/go.mod h1:9lyTyhhFlj4nbiQDMrQuYiCJ3Cj/xEWdM/fKmYI4JF0=
+go.matteson.dev/gfx v0.0.0-20210408003726-88dd60c4d521 h1:KPMAThHXtqquX5RLC7+FdaJ1FqmgDVPRc8CcxfaaAY4=
+go.matteson.dev/gfx v0.0.0-20210408003726-88dd60c4d521/go.mod h1:9lyTyhhFlj4nbiQDMrQuYiCJ3Cj/xEWdM/fKmYI4JF0=
 go.matteson.dev/no v0.0.0-20210326005433-15e6a745d00d h1:ShkTpnADWCyFqImwoe4Y0mtM0o7IeUutSNhJQ44VYPU=
 go.matteson.dev/no v0.0.0-20210326005433-15e6a745d00d/go.mod h1:TUMDPcDPOXvLBX5SgrIP5/xm6J3q9VghpuPulU/rsIA=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
