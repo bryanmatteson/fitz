@@ -5,8 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"go.matteson.dev/fitz"
-	"go.matteson.dev/gfx"
+	"github.com/bryanmatteson/fitz"
+
+	"github.com/bryanmatteson/gfx"
 )
 
 func TestPageRender(t *testing.T) {

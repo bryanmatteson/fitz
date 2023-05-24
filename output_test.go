@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"go.matteson.dev/fitz"
+	"github.com/bryanmatteson/fitz"
 )
 
 func TestOutput(t *testing.T) {

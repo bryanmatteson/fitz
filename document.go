@@ -13,8 +13,8 @@ import (
 	"sync"
 	"unsafe"
 
+	"github.com/bryanmatteson/gfx"
 	"github.com/mattn/go-pointer"
-	"go.matteson.dev/gfx"
 )
 
 type Document struct {

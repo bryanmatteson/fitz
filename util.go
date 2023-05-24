@@ -7,8 +7,8 @@ import (
 	"image/color"
 	"unsafe"
 
+	"github.com/bryanmatteson/gfx"
 	"github.com/mattn/go-pointer"
-	"go.matteson.dev/gfx"
 )
 
 func rectFromFitz(rect C.fz_rect) gfx.Rect {

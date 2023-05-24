@@ -7,7 +7,7 @@ import (
 	"sync"
 	"unsafe"
 
-	"go.matteson.dev/gfx"
+	"github.com/bryanmatteson/gfx"
 )
 
 type fitzFont struct {

@@ -3,7 +3,7 @@ package fitz
 import (
 	"strings"
 
-	"go.matteson.dev/gfx"
+	"github.com/bryanmatteson/gfx"
 )
 
 type TextSpan struct {

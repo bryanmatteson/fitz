@@ -5,7 +5,7 @@ import (
 	"image"
 	"image/color"
 
-	"go.matteson.dev/gfx"
+	"github.com/bryanmatteson/gfx"
 )
 
 type DrawDevice struct {

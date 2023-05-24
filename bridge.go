@@ -5,8 +5,8 @@ import "C"
 import (
 	"unsafe"
 
+	"github.com/bryanmatteson/gfx"
 	"github.com/mattn/go-pointer"
-	"go.matteson.dev/gfx"
 )
 
 //export fzgo_fill_path

@@ -7,7 +7,7 @@ import (
 	"image/png"
 	"math"
 
-	"go.matteson.dev/gfx"
+	"github.com/bryanmatteson/gfx"
 )
 
 type Image struct {

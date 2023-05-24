@@ -2,19 +2,16 @@ package fitz_test
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"image"
 	"image/png"
 	"io/ioutil"
-	"net/url"
 	"os"
-	"path/filepath"
 	"testing"
 
-	"go.matteson.dev/fitz"
-	"go.matteson.dev/gfx"
-	"go.matteson.dev/no/x/urlx"
+	"github.com/bryanmatteson/fitz"
+
+	"github.com/bryanmatteson/gfx"
 )
 
 func TestDocumentReader(t *testing.T) {
@@ -66,41 +63,4 @@ func TestDocumentSplit(t *testing.T) {
 		t.Fail()
 	}
 	newDoc.Save("/Users/bryan/Desktop/testoutput.pdf", fitz.DefaultWriteOptions())
-}
-
-func TestDocumentMemory(t *testing.T) {
-	uri, err := url.Parse("/Volumes/SamT5/ml/reports")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	items, err := urlx.GetFiles(context.Background(), uri, true, func(s string) bool { return filepath.Ext(s) == ".pdf" })
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for item := range items {
-		doc, err := fitz.NewDocumentFromFile(item)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		doc.SequentialPageProcess(func(pg *fitz.Page) {
-			img, err := pg.RenderImage(pg.Bounds(), 5)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			var buf bytes.Buffer
-			png.Encode(&buf, img)
-
-			fmt.Println(pg.GetText())
-			var displayList fitz.ReplayList
-			pg.RunDevice(fitz.NewReplayDevice(&displayList))
-		})
-		doc.Close()
-		fmt.Println(item)
-	}
-
-	fmt.Println("hi")
 }

@@ -4,8 +4,8 @@ import (
 	"image"
 	"image/color"
 
+	"github.com/bryanmatteson/gfx"
 	"github.com/lucasb-eyer/go-colorful"
-	"go.matteson.dev/gfx"
 )
 
 type DebugDevice struct {

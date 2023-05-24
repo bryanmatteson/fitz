@@ -8,11 +8,11 @@ package fitz
 import "C"
 
 import (
-	_ "go.matteson.dev/fitz/deps/include"
-	_ "go.matteson.dev/fitz/deps/include/mupdf"
-	_ "go.matteson.dev/fitz/deps/include/mupdf/fitz"
-	_ "go.matteson.dev/fitz/deps/include/mupdf/helpers"
-	_ "go.matteson.dev/fitz/deps/include/mupdf/pdf"
-	_ "go.matteson.dev/fitz/deps/lib/darwin_x64"
-	_ "go.matteson.dev/fitz/deps/lib/linux_x64"
+	_ "github.com/bryanmatteson/fitz/deps/include"
+	_ "github.com/bryanmatteson/fitz/deps/include/mupdf"
+	_ "github.com/bryanmatteson/fitz/deps/include/mupdf/fitz"
+	_ "github.com/bryanmatteson/fitz/deps/include/mupdf/helpers"
+	_ "github.com/bryanmatteson/fitz/deps/include/mupdf/pdf"
+	_ "github.com/bryanmatteson/fitz/deps/lib/darwin_x64"
+	_ "github.com/bryanmatteson/fitz/deps/lib/linux_x64"
 )
